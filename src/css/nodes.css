@@ -1,0 +1,255 @@
+/* ============================================
+   nodes.css - Linked List Node Visualization
+   ============================================ */
+
+/* Structure View Wrapper */
+.sv-wrap {
+  margin-bottom: var(--sp-lg);
+  padding: 0 var(--sp-md);
+}
+
+.sv-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--sp-sm);
+}
+
+.sv {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 28px var(--sp-lg) 26px;
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  overflow-x: auto;
+  min-height: 100px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd) transparent;
+}
+
+/* ArrayList: 배열 셀 간격 */
+#al-sv .n + .n {
+  margin-left: 6px;
+}
+
+/* ArrayList: 인덱스 배열 느낌의 배경 강조 */
+#al-sv .nb {
+  border-style: solid;
+}
+
+/* Node Wrapper */
+.n {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Node Box */
+.nb {
+  min-width: 68px;
+  max-width: 120px;
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 2px solid var(--bd);
+  border-radius: var(--r-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--tx);
+  text-align: center;
+  line-height: 1.2;
+  padding: 4px 6px;
+  position: relative;
+  transition: all var(--anim-normal);
+  overflow: visible;
+}
+
+.vl {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--tx);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.su {
+  font-size: 0.55rem;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+.nb:hover {
+  border-color: var(--pri);
+  z-index: 2;
+}
+
+/* Current / Playing */
+.nb.cur {
+  border-color: var(--grn);
+  background: rgba(61, 221, 182, 0.08);
+  box-shadow: 0 0 12px rgba(61, 221, 182, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Inserting */
+.nb.ins {
+  border-color: var(--pri);
+  animation: zpop var(--anim-normal) ease-out;
+}
+
+/* Deleting */
+.nb.del {
+  border-color: var(--red);
+  animation: zout var(--anim-normal) ease-in forwards;
+}
+
+/* HEAD label */
+.nb.hd-t::before {
+  content: 'HEAD';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--yel);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(255, 214, 102, 0.4);
+}
+
+/* TAIL label */
+.nb.tl-t::after {
+  content: 'TAIL';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ora);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(255, 152, 56, 0.4);
+}
+
+/* Arrow connector */
+.aw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  font-size: 1rem;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.aw.on {
+  color: var(--grn);
+}
+
+/* Null terminator */
+.nul {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--bd);
+  border-radius: var(--r-sm);
+  font-size: 0.65rem;
+  color: var(--dim);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Circular return arrow */
+.circ {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 8px;
+  color: var(--pur);
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1.5px dashed var(--pur);
+  border-radius: var(--r-sm);
+  background: rgba(167, 139, 250, 0.06);
+  white-space: nowrap;
+}
+
+/* Animations */
+@keyframes zpop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zout {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(61, 221, 182, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(61, 221, 182, 0.4);
+  }
+}
+
+/* Empty state */
+.sv-empty {
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--dim);
+  font-style: italic;
+  padding: var(--sp-md) 0;
+}
+
+@media (max-width: 640px) {
+  .nb {
+    min-width: 52px;
+    max-width: 80px;
+    height: 46px;
+    font-size: 0.6rem;
+  }
+
+  .aw {
+    width: 22px;
+    font-size: 0.8rem;
+  }
+
+  .nul {
+    width: 34px;
+    height: 34px;
+  }
+}

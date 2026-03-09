@@ -1,0 +1,3742 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎵 음악 재생목록으로 배우는 리스트 자료구조</title>
+  <style>
+/* ============================================
+   variables.css - Design Tokens & CSS Variables
+   Music Playlist Linked List Demo
+   ============================================ */
+
+:root {
+  /* Background layers */
+  --bg: #0b0b16;
+  --sf: #13132a;
+  --card: #1a1a36;
+  --bd: #282850;
+
+  /* Text */
+  --tx: #e4e4f0;
+  --dim: #6b6b8a;
+
+  /* Primary */
+  --pri: #5b8cff;
+  --pri2: #3a6aef;
+
+  /* Accents */
+  --grn: #3dddb6;
+  --red: #ff5e7e;
+  --yel: #ffd96a;
+  --ora: #ff9f43;
+  --pur: #b07aff;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  /* Shadows */
+  --shadow: 0 4px 20px rgba(0, 0, 0, .4);
+
+  /* Animation durations */
+  --anim-fast: 150ms;
+  --anim-normal: 300ms;
+  --anim-slow: 500ms;
+
+  /* Typography */
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', monospace;
+
+  /* Spacing scale */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+
+  /* Z-index layers */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-overlay: 100;
+  --z-modal: 1000;
+
+  /* Gradient presets */
+  --grad-pri: linear-gradient(135deg, var(--pri), var(--pur));
+  --grad-grn: linear-gradient(135deg, var(--grn), #2ab89a);
+  --grad-red: linear-gradient(135deg, var(--red), #e0445f);
+}
+
+</style>
+  <style>
+/* ============================================
+   reset.css - Box Model & Base Reset
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--tx);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+</style>
+  <style>
+/* ============================================
+   layout.css - Header, Tabs, Panels, Container
+   ============================================ */
+
+/* Header */
+.hd {
+  text-align: center;
+  padding: var(--sp-lg) var(--sp-md);
+  background: var(--sf);
+  border-bottom: 1px solid var(--bd);
+}
+
+.hd__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: var(--grad-pri);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hd__sub {
+  font-size: 0.85rem;
+  color: var(--dim);
+  margin-top: var(--sp-xs);
+}
+
+/* Tab Bar */
+.tabs {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--sf);
+  border-bottom: 1px solid var(--bd);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--dim);
+  border-bottom: 2px solid transparent;
+  transition: color var(--anim-fast), border-color var(--anim-fast);
+  white-space: nowrap;
+  min-width: 0;
+  user-select: none;
+}
+
+.tab:hover {
+  color: var(--tx);
+}
+
+.tab.on {
+  color: var(--pri);
+  border-bottom-color: var(--pri);
+}
+
+/* Main Container */
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--sp-md);
+}
+
+/* Panels */
+.pnl {
+  display: none;
+}
+
+.pnl.on {
+  display: block;
+}
+
+.pnl__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: var(--sp-md);
+  color: var(--tx);
+}
+
+.pnl__desc {
+  font-size: 0.85rem;
+  color: var(--dim);
+  margin-bottom: var(--sp-lg);
+  line-height: 1.7;
+}
+
+/* Section spacing */
+.sec {
+  margin-bottom: var(--sp-xl);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hd__title {
+    font-size: 1.25rem;
+  }
+
+  .tab {
+    font-size: 0.75rem;
+    padding: 10px 4px;
+  }
+
+  .wrap {
+    padding: var(--sp-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .tabs {
+    gap: 0;
+  }
+
+  .tab {
+    font-size: 0.7rem;
+    padding: 8px 2px;
+  }
+}
+
+</style>
+  <style>
+/* ============================================
+   player.css - Music Player UI
+   ============================================ */
+
+/* Player Frame */
+.pl {
+  background: var(--card);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  margin-bottom: var(--sp-lg);
+}
+
+/* Top Bar */
+.pl-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--sp-md);
+  background: var(--sf);
+  border-bottom: 1px solid var(--bd);
+}
+
+.pl-bar__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--tx);
+}
+
+.pl-bar__count {
+  font-size: 0.75rem;
+  color: var(--dim);
+  background: rgba(91, 140, 255, 0.12);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+/* Player Controls */
+.pc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-md);
+  padding: var(--sp-lg) var(--sp-md);
+}
+
+.pb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  color: var(--dim);
+  font-size: 1rem;
+  transition: all var(--anim-fast);
+}
+
+.pb:hover {
+  color: var(--tx);
+  border-color: var(--pri);
+}
+
+.pb.main {
+  width: 52px;
+  height: 52px;
+  background: var(--grad-pri);
+  border: none;
+  color: #fff;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 16px rgba(91, 140, 255, 0.35);
+}
+
+.pb.main:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(91, 140, 255, 0.45);
+}
+
+.pb.main:active {
+  transform: scale(0.96);
+}
+
+/* Now Playing */
+.np {
+  text-align: center;
+  padding: 0 var(--sp-md) var(--sp-lg);
+}
+
+.np__song {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--tx);
+  margin-bottom: 2px;
+}
+
+.np__artist {
+  font-size: 0.8rem;
+  color: var(--dim);
+}
+
+.np__empty {
+  font-size: 0.85rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* Progress bar */
+.pl-prog {
+  height: 3px;
+  background: var(--bd);
+}
+
+.pl-prog__fill {
+  height: 100%;
+  background: var(--pri);
+  width: 0%;
+  transition: width 0.3s linear;
+}
+
+@media (max-width: 640px) {
+  .pc {
+    gap: var(--sp-sm);
+    padding: var(--sp-md) var(--sp-sm);
+  }
+
+  .pb {
+    width: 34px;
+    height: 34px;
+  }
+
+  .pb.main {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+</style>
+  <style>
+/* ============================================
+   nodes.css - Linked List Node Visualization
+   ============================================ */
+
+/* Structure View Wrapper */
+.sv-wrap {
+  margin-bottom: var(--sp-lg);
+  padding: 0 var(--sp-md);
+}
+
+.sv-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--sp-sm);
+}
+
+.sv {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 28px var(--sp-lg) 26px;
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  overflow-x: auto;
+  min-height: 100px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd) transparent;
+}
+
+/* ArrayList: 배열 셀 간격 */
+#al-sv .n + .n {
+  margin-left: 6px;
+}
+
+/* ArrayList: 인덱스 배열 느낌의 배경 강조 */
+#al-sv .nb {
+  border-style: solid;
+}
+
+/* Node Wrapper */
+.n {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Node Box */
+.nb {
+  min-width: 68px;
+  max-width: 120px;
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 2px solid var(--bd);
+  border-radius: var(--r-sm);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--tx);
+  text-align: center;
+  line-height: 1.2;
+  padding: 4px 6px;
+  position: relative;
+  transition: all var(--anim-normal);
+  overflow: visible;
+}
+
+.vl {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--tx);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.su {
+  font-size: 0.55rem;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+.nb:hover {
+  border-color: var(--pri);
+  z-index: 2;
+}
+
+/* Current / Playing */
+.nb.cur {
+  border-color: var(--grn);
+  background: rgba(61, 221, 182, 0.08);
+  box-shadow: 0 0 12px rgba(61, 221, 182, 0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Inserting */
+.nb.ins {
+  border-color: var(--pri);
+  animation: zpop var(--anim-normal) ease-out;
+}
+
+/* Deleting */
+.nb.del {
+  border-color: var(--red);
+  animation: zout var(--anim-normal) ease-in forwards;
+}
+
+/* HEAD label */
+.nb.hd-t::before {
+  content: 'HEAD';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--yel);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(255, 214, 102, 0.4);
+}
+
+/* TAIL label */
+.nb.tl-t::after {
+  content: 'TAIL';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ora);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(255, 152, 56, 0.4);
+}
+
+/* Arrow connector */
+.aw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  font-size: 1rem;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.aw.on {
+  color: var(--grn);
+}
+
+/* Null terminator */
+.nul {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--bd);
+  border-radius: var(--r-sm);
+  font-size: 0.65rem;
+  color: var(--dim);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Circular return arrow */
+.circ {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 8px;
+  color: var(--pur);
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 1.5px dashed var(--pur);
+  border-radius: var(--r-sm);
+  background: rgba(167, 139, 250, 0.06);
+  white-space: nowrap;
+}
+
+/* Animations */
+@keyframes zpop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zout {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(61, 221, 182, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(61, 221, 182, 0.4);
+  }
+}
+
+/* Empty state */
+.sv-empty {
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--dim);
+  font-style: italic;
+  padding: var(--sp-md) 0;
+}
+
+@media (max-width: 640px) {
+  .nb {
+    min-width: 52px;
+    max-width: 80px;
+    height: 46px;
+    font-size: 0.6rem;
+  }
+
+  .aw {
+    width: 22px;
+    font-size: 0.8rem;
+  }
+
+  .nul {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+</style>
+  <style>
+/* ============================================
+   controls.css - Actions, Inputs, Buttons, Tracks
+   ============================================ */
+
+/* Action Row */
+.acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: var(--sp-md);
+  margin: 0 var(--sp-md) var(--sp-md);
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  align-items: center;
+}
+
+/* Input Fields */
+.inp {
+  padding: 8px 12px;
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-sm);
+  color: var(--tx);
+  font-size: 0.82rem;
+  transition: border-color var(--anim-fast);
+}
+
+.inp:focus {
+  border-color: var(--pri);
+}
+
+.inp::placeholder {
+  color: var(--dim);
+}
+
+.inp.wn {
+  width: 140px;
+}
+
+.inp.wi {
+  width: 80px;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--grn);
+  color: #0b0b16;
+  cursor: pointer;
+  transition: all var(--anim-fast);
+  white-space: nowrap;
+  border: none;
+}
+
+.btn:hover {
+  background: #34c9a5;
+  box-shadow: 0 2px 12px rgba(61, 221, 182, 0.3);
+}
+
+.btn.red {
+  background: var(--red);
+  color: #fff;
+}
+
+.btn.red:hover {
+  background: #e84e6c;
+  box-shadow: 0 2px 12px rgba(255, 94, 126, 0.3);
+}
+
+.btn.blue {
+  background: var(--pri);
+  color: #fff;
+}
+
+.btn.blue:hover {
+  background: var(--pri2);
+  box-shadow: 0 2px 12px rgba(91, 140, 255, 0.3);
+}
+
+.btn.purple {
+  background: var(--pur);
+  color: #fff;
+}
+
+.btn.purple:hover {
+  box-shadow: 0 2px 12px rgba(176, 122, 255, 0.3);
+}
+
+.bt {
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all var(--anim-fast);
+  white-space: nowrap;
+}
+
+.bt-g {
+  background: var(--grn);
+  color: #0b0b16;
+}
+
+.bt-g:hover {
+  background: #34c9a5;
+  box-shadow: 0 2px 12px rgba(61, 221, 182, 0.3);
+}
+
+.bt-r {
+  background: var(--red);
+  color: #fff;
+}
+
+.bt-r:hover {
+  background: #e84e6c;
+  box-shadow: 0 2px 12px rgba(255, 94, 126, 0.3);
+}
+
+.bt-o {
+  background: transparent;
+  border: 1px solid var(--bd);
+  color: var(--dim);
+}
+
+.bt-o:hover {
+  border-color: var(--pri);
+  color: var(--tx);
+}
+
+/* Track List */
+.tks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--sp-lg);
+  padding: 0 var(--sp-md);
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 8px 12px;
+  background: var(--sf);
+  border-radius: var(--r-sm);
+  font-size: 0.82rem;
+  color: var(--dim);
+  cursor: pointer;
+  transition: background var(--anim-fast);
+}
+
+.track:hover {
+  background: var(--card);
+}
+
+.track.on {
+  background: rgba(61, 221, 182, 0.08);
+  color: var(--grn);
+  font-weight: 600;
+}
+
+.tn {
+  width: 22px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-family: var(--mono);
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.tt {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Highlight search result */
+.hl {
+  border-color: var(--yel) !important;
+  box-shadow: 0 0 14px rgba(255, 217, 106, 0.35);
+}
+
+</style>
+  <style>
+/* ============================================
+   log.css - Operation Log Panel
+   ============================================ */
+
+.lg {
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  padding: var(--sp-md);
+  margin: 0 var(--sp-md) var(--sp-md);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.8;
+  min-height: 50px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd) transparent;
+  color: var(--dim);
+}
+
+.lg:empty::before {
+  content: '연산 로그가 여기에 표시됩니다';
+  color: var(--dim);
+  font-style: italic;
+  font-size: 0.72rem;
+}
+
+.lg-w {
+  color: var(--yel);
+}
+
+.lg-e {
+  color: var(--red);
+}
+
+.lg::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lg::-webkit-scrollbar-thumb {
+  background: var(--bd);
+  border-radius: 2px;
+}
+
+/* Operation name - green */
+.lg .op {
+  color: var(--grn);
+  font-weight: 600;
+}
+
+/* Value - blue */
+.lg .v {
+  color: var(--pri);
+}
+
+/* Index - yellow */
+.lg .i {
+  color: var(--yel);
+}
+
+/* Comment / structure - purple */
+.lg .c {
+  color: var(--pur);
+}
+
+/* Timestamp */
+.lg .ts {
+  color: var(--dim);
+  margin-right: var(--sp-sm);
+  font-size: 0.65rem;
+}
+
+/* Log entry */
+.lg__entry {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(40, 40, 80, 0.3);
+}
+
+.lg__entry:last-child {
+  border-bottom: none;
+}
+
+/* Empty log */
+.lg__empty {
+  color: var(--dim);
+  text-align: center;
+  font-style: italic;
+  padding: var(--sp-md) 0;
+}
+
+</style>
+  <style>
+/* ============================================
+   compare.css - Info Cards, Complexity, Comparison
+   ============================================ */
+
+/* Concept Info Card */
+.info {
+  background: var(--card);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  padding: var(--sp-lg);
+  margin-bottom: var(--sp-md);
+}
+
+.info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tx);
+  margin-bottom: var(--sp-sm);
+}
+
+.info p {
+  font-size: 0.84rem;
+  color: var(--dim);
+  line-height: 1.7;
+}
+
+/* Highlight spans */
+.y {
+  color: var(--yel);
+  font-weight: 600;
+}
+
+.g {
+  color: var(--grn);
+  font-weight: 600;
+}
+
+.r {
+  color: var(--red);
+  font-weight: 600;
+}
+
+/* Badge / Tag */
+.tag {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 20px;
+  background: rgba(91, 140, 255, 0.12);
+  color: var(--pri);
+}
+
+/* Complexity Table */
+.cx {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: var(--sp-lg);
+}
+
+.cx th,
+.cx td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--bd);
+}
+
+.cx th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--sf);
+}
+
+.cx td {
+  color: var(--tx);
+}
+
+.cx td.g {
+  color: var(--grn);
+  font-weight: 600;
+}
+
+.cx td.r {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.cx td.y {
+  color: var(--yel);
+  font-weight: 600;
+}
+
+.cx .f {
+  color: var(--grn);
+  font-weight: 600;
+}
+
+.cx .s {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.cx .hl-row {
+  background: rgba(91, 140, 255, 0.05);
+}
+
+/* Comparison Table */
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: var(--sp-lg);
+  background: var(--card);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.cmp-table th,
+.cmp-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--bd);
+}
+
+.cmp-table th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--sf);
+}
+
+/* Verdict Cards */
+.cmp-verdict {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.cmp-verdict__card {
+  background: var(--card);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  padding: var(--sp-md);
+  text-align: center;
+}
+
+.cmp-verdict__label {
+  font-size: 0.72rem;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--sp-xs);
+}
+
+.cmp-verdict__value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tx);
+}
+
+/* Note text */
+.note {
+  font-size: 0.75rem;
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* Info list */
+.info ul {
+  margin: var(--sp-sm) 0;
+  padding-left: var(--sp-lg);
+}
+
+.info li {
+  font-size: 0.84rem;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
+@media (max-width: 640px) {
+  .cx th,
+  .cx td,
+  .cmp-table th,
+  .cmp-table td {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .cmp-verdict {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hd">
+  <h1>🎵 음악 재생목록으로 배우는 리스트</h1>
+  <p>같은 재생목록, 4가지 자료구조 — 무엇이 다를까?</p>
+</div>
+
+<!-- Tabs -->
+<nav class="tabs" id="tab-bar">
+  <button class="tab on" data-t="al">📋 Array List (배열 기반)</button>
+  <button class="tab" data-t="sl">➡️ Singly Linked (단방향 연결)</button>
+  <button class="tab" data-t="dl">↔️ Doubly Linked (양방향 연결)</button>
+  <button class="tab" data-t="cl">🔁 Circular Linked (순환 연결)</button>
+  <button class="tab" data-t="cmp">⚖️ 비교 (한눈에 정리)</button>
+</nav>
+
+<!-- ===== Array List Panel ===== -->
+<div class="pnl on" id="p-al">
+  <div class="info">
+    <h3>📋 Array List — 인덱스로 즉시 접근 <span class="tag">배열 기반</span></h3>
+    <p>멜론·Spotify처럼 <span class="y">번호(인덱스)로 바로 접근</span>할 수 있는 리스트. 3번 곡 틀어줘 → <span class="g">O(1) 즉시!</span> 중간 삽입 → <span class="r">뒤 곡들 밀림 O(n)</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>📋 Array List Playlist</b><span id="al-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 연속된 배열 칸</div>
+      <div class="sv" id="al-sv"></div>
+    </div>
+    <div class="tks" id="al-tks"></div>
+    <div class="np" id="al-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="al-prev">⏮</button>
+      <button class="pb main" id="al-play">▶</button>
+      <button class="pb" id="al-next">⏭</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="al-nm" placeholder="곡 이름">
+      <input class="inp wi" id="al-idx" placeholder="인덱스" type="number" min="0">
+      <button class="btn" id="al-add">추가</button>
+      <button class="btn red" id="al-del">삭제</button>
+      <button class="btn blue" id="al-find">검색</button>
+      <button class="btn purple" id="al-shuf">셔플</button>
+    </div>
+    <div class="lg" id="al-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>인덱스 접근</td><td class="g">O(1)</td><td>배열 인덱스로 즉시</td></tr>
+        <tr><td>맨 뒤 추가</td><td class="g">O(1)*</td><td>공간 있으면 즉시 (*resize 시 O(n))</td></tr>
+        <tr><td>맨 앞/중간 삽입</td><td class="r">O(n)</td><td>뒤 요소 전부 이동</td></tr>
+        <tr><td>맨 앞/중간 삭제</td><td class="r">O(n)</td><td>뒤 요소 전부 이동</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>순차 탐색</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Singly Linked List Panel ===== -->
+<div class="pnl" id="p-sl">
+  <div class="info">
+    <h3>➡️ Singly Linked List — 한 방향 체인 <span class="tag">단방향 연결</span></h3>
+    <p>각 곡이 <span class="y">다음 곡만 기억</span>. 다음곡 <span class="g">O(1)</span>, 이전곡 <span class="r">O(n) 처음부터 다시 찾아야!</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>➡️ Singly Linked Playlist</b><span id="sl-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 노드 → 노드 체인</div>
+      <div class="sv" id="sl-sv"></div>
+    </div>
+    <div class="tks" id="sl-tks"></div>
+    <div class="np" id="sl-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="sl-prev">⏮</button>
+      <button class="pb main" id="sl-play">▶</button>
+      <button class="pb" id="sl-next">⏭</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="sl-nm" placeholder="곡 이름">
+      <button class="btn" id="sl-addF">맨 앞 추가</button>
+      <button class="btn" id="sl-addL">맨 뒤 추가</button>
+      <button class="btn red" id="sl-delF">맨 앞 삭제</button>
+      <button class="btn blue" id="sl-find">검색</button>
+    </div>
+    <div class="lg" id="sl-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>맨 앞 삽입</td><td class="g">O(1)</td><td>head만 변경</td></tr>
+        <tr><td>맨 뒤 삽입</td><td class="r">O(n)</td><td>끝까지 순회 필요</td></tr>
+        <tr><td>맨 앞 삭제</td><td class="g">O(1)</td><td>head만 변경</td></tr>
+        <tr><td>맨 뒤 삭제</td><td class="r">O(n)</td><td>이전 노드 찾아야</td></tr>
+        <tr><td>인덱스 접근</td><td class="r">O(n)</td><td>처음부터 순회</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>순차 탐색</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Doubly Linked List Panel ===== -->
+<div class="pnl" id="p-dl">
+  <div class="info">
+    <h3>↔️ Doubly Linked List — 양방향 체인 <span class="tag">양방향 연결</span></h3>
+    <p>각 곡이 <span class="y">이전/다음 모두 기억</span>. 둘 다 <span class="g">O(1)!</span> 대신 <span class="r">메모리 더 씀 (trade-off)</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>↔️ Doubly Linked Playlist</b><span id="dl-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 노드 ↔ 노드 양방향</div>
+      <div class="sv" id="dl-sv"></div>
+    </div>
+    <div class="tks" id="dl-tks"></div>
+    <div class="np" id="dl-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="dl-prev">⏮</button>
+      <button class="pb main" id="dl-play">▶</button>
+      <button class="pb" id="dl-next">⏭</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="dl-nm" placeholder="곡 이름">
+      <button class="btn" id="dl-addF">맨 앞 추가</button>
+      <button class="btn" id="dl-addL">맨 뒤 추가</button>
+      <button class="btn red" id="dl-delC">현재 곡 삭제</button>
+      <button class="btn blue" id="dl-find">검색</button>
+    </div>
+    <div class="lg" id="dl-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>맨 앞/뒤 삽입</td><td class="g">O(1)</td><td>head/tail 포인터 활용</td></tr>
+        <tr><td>맨 앞/뒤 삭제</td><td class="g">O(1)</td><td>prev/next로 즉시</td></tr>
+        <tr><td>현재 노드 삭제</td><td class="g">O(1)</td><td>prev/next 바로 연결</td></tr>
+        <tr><td>이전/다음 이동</td><td class="g">O(1)</td><td>양방향 포인터</td></tr>
+        <tr><td>인덱스 접근</td><td class="r">O(n)</td><td>순회 필요</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>순차 탐색</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Circular Linked List Panel ===== -->
+<div class="pnl" id="p-cl">
+  <div class="info">
+    <h3>🔁 Circular Linked List — 끝이 없는 순환 <span class="tag">순환 연결</span></h3>
+    <p><span class="y">마지막 곡 → 첫 곡 자동 순환!</span> tail.next = head. <span class="g">전체 반복 🔁 모드</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>🔁 Circular Linked Playlist</b><span id="cl-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 순환 연결 고리</div>
+      <div class="sv" id="cl-sv"></div>
+    </div>
+    <div class="tks" id="cl-tks"></div>
+    <div class="np" id="cl-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="cl-prev">⏮</button>
+      <button class="pb main" id="cl-play">▶</button>
+      <button class="pb" id="cl-next">⏭</button>
+      <button class="pb" id="cl-auto">🔁</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="cl-nm" placeholder="곡 이름">
+      <button class="btn" id="cl-add">곡 추가</button>
+      <button class="btn red" id="cl-delC">현재 곡 삭제</button>
+      <button class="btn blue" id="cl-find">검색</button>
+    </div>
+    <div class="lg" id="cl-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>삽입 (tail 뒤)</td><td class="g">O(1)</td><td>tail → new → head 연결</td></tr>
+        <tr><td>맨 앞 삭제</td><td class="g">O(1)</td><td>tail.next 변경</td></tr>
+        <tr><td>임의 노드 삭제</td><td class="r">O(n)</td><td>이전 노드 순회 필요</td></tr>
+        <tr><td>다음 이동</td><td class="g">O(1)</td><td>next 포인터</td></tr>
+        <tr><td>순환 감지</td><td class="y">항상 순환</td><td>tail.next === head</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>한 바퀴 순회</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Compare Panel ===== -->
+<div class="pnl" id="p-cmp">
+  <div class="info">
+    <h3>⚖️ 4가지 리스트 비교 — 한눈에 정리</h3>
+    <table class="cx">
+      <thead>
+        <tr>
+          <th>연산</th>
+          <th>📋 Array List</th>
+          <th>➡️ Singly</th>
+          <th>↔️ Doubly</th>
+          <th>🔁 Circular</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>인덱스 접근</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>맨 앞 삽입</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>맨 뒤 삽입</td>
+          <td class="g">O(1)*</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>맨 앞 삭제</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>맨 뒤 삭제</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>중간 삽입/삭제</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)†</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>이전 곡</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>다음 곡</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>검색</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>메모리</td>
+          <td class="g">가장 적음</td>
+          <td class="y">+next 포인터</td>
+          <td class="r">+prev/next</td>
+          <td class="y">+next 포인터</td>
+        </tr>
+        <tr>
+          <td>순환 재생</td>
+          <td class="r">별도 로직</td>
+          <td class="r">별도 로직</td>
+          <td class="r">별도 로직</td>
+          <td class="g">자연스러움</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">* amortized, resize 시 O(n) &nbsp; † 노드 참조가 있을 때</p>
+  </div>
+
+  <div class="info">
+    <h3>🎯 결론 — 어떤 리스트를 써야 할까?</h3>
+    <table class="cx">
+      <thead><tr><th>상황</th><th>추천</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>번호로 곡 선택</td><td class="g">📋 ArrayList</td><td>인덱스 O(1) 접근</td></tr>
+        <tr><td>앞에서 자주 추가/삭제</td><td class="g">➡️ Singly</td><td>head 조작 O(1), 메모리 절약</td></tr>
+        <tr><td>이전곡/다음곡 자유 이동</td><td class="g">↔️ Doubly</td><td>양방향 O(1)</td></tr>
+        <tr><td>전체 반복 재생</td><td class="g">🔁 Circular</td><td>자연스러운 순환</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info">
+    <h3>💡 실제 앱은?</h3>
+    <p>실제 음악 앱(Spotify, Apple Music 등)은 <span class="y">ArrayList + Doubly Linked List</span>를 혼합합니다.
+      인덱스 접근이 필요한 UI 목록은 <span class="g">ArrayList</span>,
+      이전/다음 이동이 잦은 재생 큐는 <span class="g">Doubly Linked List</span>,
+      반복 재생 모드에서는 <span class="g">Circular</span> 구조를 적용합니다.
+      <strong>자료구조는 은총알이 아니라 도구 — 상황에 맞게 골라 쓰는 것이 핵심입니다.</strong></p>
+  </div>
+</div>
+
+<!-- Scripts (dependency order) -->
+<script>
+/**
+ * Song - 플레이리스트의 곡을 나타내는 모델 클래스
+ */
+class Song {
+  /**
+   * @param {string} title - 곡 제목
+   * @param {string} artist - 아티스트
+   * @param {number} duration - 재생 시간(초)
+   */
+  constructor(title, artist, duration) {
+    this.title = title;
+    this.artist = artist;
+    this.duration = duration;
+  }
+
+  /**
+   * 다른 Song과 제목 기준으로 동일한지 비교
+   * @param {Song} other
+   * @returns {boolean}
+   */
+  equals(other) {
+    return other && this.title === other.title;
+  }
+
+  /**
+   * @returns {string}
+   */
+  toString() {
+    return this.title + ' - ' + this.artist;
+  }
+}
+
+</script>
+<script>
+/**
+ * ArrayList - 배열 기반 플레이리스트 구현
+ * O(1) 인덱스 접근, splice 기반 삽입/삭제
+ */
+class ArrayList {
+  constructor() {
+    this._data = [];
+    this._size = 0;
+    this._currentIndex = -1;
+  }
+
+  // ─── 삽입 ───
+
+  insertAt(index, song) {
+    if (index < 0 || index > this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = this._size - index; // 뒤로 밀린 요소 수
+    this._data.splice(index, 0, song);
+    this._size++;
+    if (this._currentIndex >= index && this._currentIndex >= 0) {
+      this._currentIndex++;
+    }
+    return { success: true, song: song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  insertFirst(song) {
+    return this.insertAt(0, song);
+  }
+
+  insertLast(song) {
+    var steps = 0; // 끝에 추가하므로 이동 없음
+    this._data.push(song);
+    this._size++;
+    return { success: true, song: song, index: this._size - 1, steps: steps, complexity: 'O(1)' };
+  }
+
+  // ─── 삭제 ───
+
+  deleteAt(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = this._size - 1 - index; // 앞으로 당긴 요소 수
+    var removed = this._data.splice(index, 1)[0];
+    this._size--;
+    if (this._size === 0) {
+      this._currentIndex = -1;
+    } else if (this._currentIndex === index) {
+      if (this._currentIndex >= this._size) {
+        this._currentIndex = this._size - 1;
+      }
+    } else if (this._currentIndex > index) {
+      this._currentIndex--;
+    }
+    return { success: true, song: removed, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  deleteFirst() {
+    return this.deleteAt(0);
+  }
+
+  deleteLast() {
+    return this.deleteAt(this._size - 1);
+  }
+
+  // ─── 조회 ───
+
+  get(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    return { success: true, song: this._data[index], index: index, steps: 1, complexity: 'O(1)' };
+  }
+
+  search(title) {
+    var steps = 0;
+    for (var i = 0; i < this._size; i++) {
+      steps++;
+      if (this._data[i].title === title) {
+        return { success: true, song: this._data[i], index: i, steps: steps, complexity: 'O(n)' };
+      }
+    }
+    return { success: false, song: null, index: -1, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 재생 제어 ───
+
+  play(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    this._currentIndex = index;
+    return { success: true, song: this._data[index], index: index, steps: 1, complexity: 'O(1)' };
+  }
+
+  next() {
+    if (this._size === 0) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    if (this._currentIndex < 0) {
+      this._currentIndex = 0;
+    } else if (this._currentIndex < this._size - 1) {
+      this._currentIndex++;
+    } else {
+      return { success: false, song: null, index: this._currentIndex, steps: 1, complexity: 'O(1)' };
+    }
+    return { success: true, song: this._data[this._currentIndex], index: this._currentIndex, steps: 1, complexity: 'O(1)' };
+  }
+
+  prev() {
+    if (this._size === 0) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    if (this._currentIndex <= 0) {
+      return { success: false, song: null, index: this._currentIndex, steps: 1, complexity: 'O(1)' };
+    }
+    this._currentIndex--;
+    return { success: true, song: this._data[this._currentIndex], index: this._currentIndex, steps: 1, complexity: 'O(1)' };
+  }
+
+  current() {
+    if (this._currentIndex < 0 || this._currentIndex >= this._size) {
+      return { song: null, index: -1 };
+    }
+    return { song: this._data[this._currentIndex], index: this._currentIndex };
+  }
+
+  // ─── 유틸리티 ───
+
+  size() {
+    return this._size;
+  }
+
+  toArray() {
+    var result = [];
+    for (var i = 0; i < this._size; i++) {
+      result.push(this._data[i]);
+    }
+    return result;
+  }
+
+  shuffle() {
+    var steps = 0;
+    for (var i = this._size - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = this._data[i];
+      this._data[i] = this._data[j];
+      this._data[j] = temp;
+      steps++;
+    }
+    this._currentIndex = -1;
+    return { success: true, song: null, index: -1, steps: steps, complexity: 'O(n)' };
+  }
+}
+
+</script>
+<script>
+/**
+ * SNode - 단일 연결 리스트 노드
+ */
+class SNode {
+  constructor(song) {
+    this.song = song;
+    this.next = null;
+  }
+}
+
+/**
+ * SinglyLinkedList - 단일 연결 리스트 기반 플레이리스트
+ * head 삽입/삭제 O(1), tail/임의 위치 O(n)
+ */
+class SinglyLinkedList {
+  constructor() {
+    this._head = null;
+    this._size = 0;
+    this._current = null;
+  }
+
+  // ─── 삽입 ───
+
+  insertFirst(song) {
+    var node = new SNode(song);
+    node.next = this._head;
+    this._head = node;
+    this._size++;
+    return { success: true, song: song, index: 0, steps: 1, complexity: 'O(1)' };
+  }
+
+  insertLast(song) {
+    var node = new SNode(song);
+    if (!this._head) {
+      this._head = node;
+      this._size++;
+      return { success: true, song: song, index: 0, steps: 1, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._head;
+    while (curr.next) {
+      curr = curr.next;
+      steps++;
+    }
+    curr.next = node;
+    this._size++;
+    return { success: true, song: song, index: this._size - 1, steps: steps, complexity: 'O(n)' };
+  }
+
+  insertAt(index, song) {
+    if (index < 0 || index > this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (index === 0) {
+      return this.insertFirst(song);
+    }
+    var node = new SNode(song);
+    var steps = 1;
+    var curr = this._head;
+    for (var i = 0; i < index - 1; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    node.next = curr.next;
+    curr.next = node;
+    this._size++;
+    return { success: true, song: song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 삭제 ───
+
+  deleteFirst() {
+    if (!this._head) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    var removed = this._head.song;
+    if (this._current === this._head) {
+      this._current = this._head.next;
+    }
+    this._head = this._head.next;
+    this._size--;
+    return { success: true, song: removed, index: 0, steps: 1, complexity: 'O(1)' };
+  }
+
+  deleteLast() {
+    if (!this._head) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (!this._head.next) {
+      var removed = this._head.song;
+      if (this._current === this._head) {
+        this._current = null;
+      }
+      this._head = null;
+      this._size--;
+      return { success: true, song: removed, index: 0, steps: 1, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._head;
+    while (curr.next.next) {
+      curr = curr.next;
+      steps++;
+    }
+    var removed = curr.next.song;
+    if (this._current === curr.next) {
+      this._current = curr;
+    }
+    curr.next = null;
+    this._size--;
+    return { success: true, song: removed, index: this._size, steps: steps, complexity: 'O(n)' };
+  }
+
+  deleteAt(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (index === 0) {
+      return this.deleteFirst();
+    }
+    var steps = 1;
+    var curr = this._head;
+    for (var i = 0; i < index - 1; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    var removed = curr.next.song;
+    if (this._current === curr.next) {
+      this._current = curr.next.next || curr;
+    }
+    curr.next = curr.next.next;
+    this._size--;
+    return { success: true, song: removed, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 조회 ───
+
+  get(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._head;
+    for (var i = 0; i < index; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  search(title) {
+    var steps = 0;
+    var curr = this._head;
+    var index = 0;
+    while (curr) {
+      steps++;
+      if (curr.song.title === title) {
+        return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+      }
+      curr = curr.next;
+      index++;
+    }
+    return { success: false, song: null, index: -1, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 재생 제어 ───
+
+  play(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._head;
+    for (var i = 0; i < index; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    this._current = curr;
+    return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  next() {
+    if (this._size === 0) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    if (!this._current) {
+      this._current = this._head;
+      return { success: true, song: this._current.song, index: 0, steps: 1, complexity: 'O(1)' };
+    }
+    if (!this._current.next) {
+      return { success: false, song: null, index: this._indexOf(this._current), steps: 1, complexity: 'O(1)' };
+    }
+    this._current = this._current.next;
+    return { success: true, song: this._current.song, index: this._indexOf(this._current), steps: 1, complexity: 'O(1)' };
+  }
+
+  prev() {
+    if (this._size === 0 || !this._current || this._current === this._head) {
+      return { success: false, song: null, index: this._current ? 0 : -1, steps: this._current ? 1 : 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._head;
+    while (curr.next !== this._current) {
+      curr = curr.next;
+      steps++;
+    }
+    this._current = curr;
+    return { success: true, song: curr.song, index: this._indexOf(curr), steps: steps, complexity: 'O(n)' };
+  }
+
+  current() {
+    if (!this._current) {
+      return { song: null, index: -1 };
+    }
+    return { song: this._current.song, index: this._indexOf(this._current) };
+  }
+
+  // ─── 유틸리티 ───
+
+  size() {
+    return this._size;
+  }
+
+  toArray() {
+    var result = [];
+    var curr = this._head;
+    while (curr) {
+      result.push(curr.song);
+      curr = curr.next;
+    }
+    return result;
+  }
+
+  /**
+   * 노드의 인덱스를 반환 (내부 헬퍼)
+   * @param {SNode} node
+   * @returns {number}
+   */
+  _indexOf(node) {
+    var idx = 0;
+    var curr = this._head;
+    while (curr) {
+      if (curr === node) return idx;
+      curr = curr.next;
+      idx++;
+    }
+    return -1;
+  }
+}
+
+</script>
+<script>
+/**
+ * DNode - 이중 연결 리스트 노드
+ */
+class DNode {
+  constructor(song) {
+    this.song = song;
+    this.prev = null;
+    this.next = null;
+  }
+}
+
+/**
+ * DoublyLinkedList - 이중 연결 리스트 기반 플레이리스트
+ * head/tail 삽입/삭제 O(1), prev() O(1) - 단일 연결 리스트 대비 핵심 장점
+ */
+class DoublyLinkedList {
+  constructor() {
+    this._head = null;
+    this._tail = null;
+    this._size = 0;
+    this._current = null;
+  }
+
+  // ─── 삽입 ───
+
+  insertFirst(song) {
+    var node = new DNode(song);
+    if (!this._head) {
+      this._head = node;
+      this._tail = node;
+    } else {
+      node.next = this._head;
+      this._head.prev = node;
+      this._head = node;
+    }
+    this._size++;
+    return { success: true, song: song, index: 0, steps: 1, complexity: 'O(1)' };
+  }
+
+  insertLast(song) {
+    var node = new DNode(song);
+    if (!this._tail) {
+      this._head = node;
+      this._tail = node;
+    } else {
+      node.prev = this._tail;
+      this._tail.next = node;
+      this._tail = node;
+    }
+    this._size++;
+    return { success: true, song: song, index: this._size - 1, steps: 1, complexity: 'O(1)' };
+  }
+
+  insertAt(index, song) {
+    if (index < 0 || index > this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (index === 0) {
+      return this.insertFirst(song);
+    }
+    if (index === this._size) {
+      return this.insertLast(song);
+    }
+    var node = new DNode(song);
+    var steps = 1;
+    var curr;
+    // 가까운 쪽에서 탐색
+    if (index <= this._size / 2) {
+      curr = this._head;
+      for (var i = 0; i < index; i++) {
+        curr = curr.next;
+        steps++;
+      }
+    } else {
+      curr = this._tail;
+      for (var i = this._size - 1; i > index; i--) {
+        curr = curr.prev;
+        steps++;
+      }
+    }
+    node.next = curr;
+    node.prev = curr.prev;
+    curr.prev.next = node;
+    curr.prev = node;
+    this._size++;
+    return { success: true, song: song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 삭제 ───
+
+  deleteFirst() {
+    if (!this._head) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    var removed = this._head.song;
+    if (this._current === this._head) {
+      this._current = this._head.next;
+    }
+    if (this._head === this._tail) {
+      this._head = null;
+      this._tail = null;
+    } else {
+      this._head = this._head.next;
+      this._head.prev = null;
+    }
+    this._size--;
+    return { success: true, song: removed, index: 0, steps: 1, complexity: 'O(1)' };
+  }
+
+  deleteLast() {
+    if (!this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    var removed = this._tail.song;
+    var idx = this._size - 1;
+    if (this._current === this._tail) {
+      this._current = this._tail.prev;
+    }
+    if (this._head === this._tail) {
+      this._head = null;
+      this._tail = null;
+    } else {
+      this._tail = this._tail.prev;
+      this._tail.next = null;
+    }
+    this._size--;
+    return { success: true, song: removed, index: idx, steps: 1, complexity: 'O(1)' };
+  }
+
+  deleteAt(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (index === 0) {
+      return this.deleteFirst();
+    }
+    if (index === this._size - 1) {
+      return this.deleteLast();
+    }
+    var steps = 1;
+    var curr;
+    if (index <= this._size / 2) {
+      curr = this._head;
+      for (var i = 0; i < index; i++) {
+        curr = curr.next;
+        steps++;
+      }
+    } else {
+      curr = this._tail;
+      for (var i = this._size - 1; i > index; i--) {
+        curr = curr.prev;
+        steps++;
+      }
+    }
+    var removed = curr.song;
+    if (this._current === curr) {
+      this._current = curr.next || curr.prev;
+    }
+    curr.prev.next = curr.next;
+    curr.next.prev = curr.prev;
+    this._size--;
+    return { success: true, song: removed, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  /**
+   * deleteCurrent - 현재 재생 중인 곡 삭제 O(1)
+   * 이중 연결 리스트의 핵심 장점: prev/next 포인터로 즉시 삭제
+   */
+  deleteCurrent() {
+    if (!this._current) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    var removed = this._current.song;
+    var idx = this._indexOf(this._current);
+    var nextCurrent = this._current.next || this._current.prev;
+
+    if (this._current === this._head && this._current === this._tail) {
+      this._head = null;
+      this._tail = null;
+    } else if (this._current === this._head) {
+      this._head = this._current.next;
+      this._head.prev = null;
+    } else if (this._current === this._tail) {
+      this._tail = this._current.prev;
+      this._tail.next = null;
+    } else {
+      this._current.prev.next = this._current.next;
+      this._current.next.prev = this._current.prev;
+    }
+    this._current = nextCurrent;
+    this._size--;
+    return { success: true, song: removed, index: idx, steps: 1, complexity: 'O(1)' };
+  }
+
+  // ─── 조회 ───
+
+  get(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr;
+    if (index <= this._size / 2) {
+      curr = this._head;
+      for (var i = 0; i < index; i++) {
+        curr = curr.next;
+        steps++;
+      }
+    } else {
+      curr = this._tail;
+      for (var i = this._size - 1; i > index; i--) {
+        curr = curr.prev;
+        steps++;
+      }
+    }
+    return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  search(title) {
+    var steps = 0;
+    var curr = this._head;
+    var index = 0;
+    while (curr) {
+      steps++;
+      if (curr.song.title === title) {
+        return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+      }
+      curr = curr.next;
+      index++;
+    }
+    return { success: false, song: null, index: -1, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 재생 제어 ───
+
+  play(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr;
+    if (index <= this._size / 2) {
+      curr = this._head;
+      for (var i = 0; i < index; i++) {
+        curr = curr.next;
+        steps++;
+      }
+    } else {
+      curr = this._tail;
+      for (var i = this._size - 1; i > index; i--) {
+        curr = curr.prev;
+        steps++;
+      }
+    }
+    this._current = curr;
+    return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  /**
+   * next - O(1) via .next 포인터
+   */
+  next() {
+    if (this._size === 0) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    if (!this._current) {
+      this._current = this._head;
+      return { success: true, song: this._current.song, index: 0, steps: 1, complexity: 'O(1)' };
+    }
+    if (!this._current.next) {
+      return { success: false, song: null, index: this._indexOf(this._current), steps: 1, complexity: 'O(1)' };
+    }
+    this._current = this._current.next;
+    return { success: true, song: this._current.song, index: this._indexOf(this._current), steps: 1, complexity: 'O(1)' };
+  }
+
+  /**
+   * prev - O(1) via .prev 포인터 (단일 연결 리스트와의 핵심 차이!)
+   */
+  prev() {
+    if (this._size === 0 || !this._current || !this._current.prev) {
+      return { success: false, song: null, index: this._current ? 0 : -1, steps: this._current ? 1 : 0, complexity: 'O(1)' };
+    }
+    this._current = this._current.prev;
+    return { success: true, song: this._current.song, index: this._indexOf(this._current), steps: 1, complexity: 'O(1)' };
+  }
+
+  current() {
+    if (!this._current) {
+      return { song: null, index: -1 };
+    }
+    return { song: this._current.song, index: this._indexOf(this._current) };
+  }
+
+  // ─── 유틸리티 ───
+
+  size() {
+    return this._size;
+  }
+
+  toArray() {
+    var result = [];
+    var curr = this._head;
+    while (curr) {
+      result.push(curr.song);
+      curr = curr.next;
+    }
+    return result;
+  }
+
+  /**
+   * 노드의 인덱스를 반환 (내부 헬퍼)
+   * @param {DNode} node
+   * @returns {number}
+   */
+  _indexOf(node) {
+    var idx = 0;
+    var curr = this._head;
+    while (curr) {
+      if (curr === node) return idx;
+      curr = curr.next;
+      idx++;
+    }
+    return -1;
+  }
+}
+
+</script>
+<script>
+/**
+ * CNode - 원형 연결 리스트 노드
+ */
+class CNode {
+  constructor(song) {
+    this.song = song;
+    this.next = null;
+  }
+}
+
+/**
+ * CircularLinkedList - 원형 연결 리스트 기반 플레이리스트
+ * tail.next = head 구조, next()가 자동으로 처음으로 순환
+ */
+class CircularLinkedList {
+  constructor() {
+    this._tail = null;
+    this._size = 0;
+    this._current = null;
+  }
+
+  /**
+   * head 노드 반환 (tail.next)
+   * @returns {CNode|null}
+   */
+  getHead() {
+    return this._tail ? this._tail.next : null;
+  }
+
+  // ─── 삽입 ───
+
+  insertFirst(song) {
+    var node = new CNode(song);
+    if (!this._tail) {
+      node.next = node;
+      this._tail = node;
+    } else {
+      node.next = this._tail.next;
+      this._tail.next = node;
+    }
+    this._size++;
+    return { success: true, song: song, index: 0, steps: 1, complexity: 'O(1)' };
+  }
+
+  insertLast(song) {
+    var node = new CNode(song);
+    if (!this._tail) {
+      node.next = node;
+      this._tail = node;
+    } else {
+      node.next = this._tail.next; // new node -> head
+      this._tail.next = node;      // old tail -> new node
+      this._tail = node;           // new node becomes tail
+    }
+    this._size++;
+    return { success: true, song: song, index: this._size - 1, steps: 1, complexity: 'O(1)' };
+  }
+
+  insertAt(index, song) {
+    if (index < 0 || index > this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (index === 0) {
+      return this.insertFirst(song);
+    }
+    if (index === this._size) {
+      return this.insertLast(song);
+    }
+    var node = new CNode(song);
+    var steps = 1;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < index - 1; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    node.next = curr.next;
+    curr.next = node;
+    this._size++;
+    return { success: true, song: song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 삭제 ───
+
+  deleteFirst() {
+    if (!this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)' };
+    }
+    var head = this._tail.next;
+    var removed = head.song;
+    if (this._current === head) {
+      this._current = (this._size > 1) ? head.next : null;
+    }
+    if (this._tail === head) {
+      // 유일한 노드
+      this._tail = null;
+    } else {
+      this._tail.next = head.next;
+    }
+    this._size--;
+    return { success: true, song: removed, index: 0, steps: 1, complexity: 'O(1)' };
+  }
+
+  deleteLast() {
+    if (!this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var removed = this._tail.song;
+    var idx = this._size - 1;
+    if (this._current === this._tail) {
+      this._current = (this._size > 1) ? this._tail.next : null;
+    }
+    if (this._tail.next === this._tail) {
+      // 유일한 노드
+      this._tail = null;
+    } else {
+      var steps = 1;
+      var curr = this._tail.next; // head
+      while (curr.next !== this._tail) {
+        curr = curr.next;
+        steps++;
+      }
+      curr.next = this._tail.next; // prev of tail -> head
+      this._tail = curr;
+    }
+    this._size--;
+    return { success: true, song: removed, index: idx, steps: this._size, complexity: 'O(n)' };
+  }
+
+  deleteAt(index) {
+    if (index < 0 || index >= this._size) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    if (index === 0) {
+      return this.deleteFirst();
+    }
+    if (index === this._size - 1) {
+      return this.deleteLast();
+    }
+    var steps = 1;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < index - 1; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    var target = curr.next;
+    var removed = target.song;
+    if (this._current === target) {
+      this._current = target.next;
+    }
+    curr.next = target.next;
+    this._size--;
+    return { success: true, song: removed, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  /**
+   * deleteCurrent - 현재 재생 중인 곡 삭제
+   * 이전 노드를 찾아야 하므로 O(n)
+   */
+  deleteCurrent() {
+    if (!this._current || !this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var removed = this._current.song;
+    var idx = this._indexOf(this._current);
+
+    if (this._size === 1) {
+      this._tail = null;
+      this._current = null;
+      this._size--;
+      return { success: true, song: removed, index: idx, steps: 1, complexity: 'O(n)' };
+    }
+
+    // prev 노드 탐색
+    var steps = 1;
+    var prev = this._tail.next; // head
+    while (prev.next !== this._current) {
+      prev = prev.next;
+      steps++;
+    }
+    var nextNode = this._current.next;
+    prev.next = nextNode;
+    if (this._current === this._tail) {
+      this._tail = prev;
+    }
+    this._current = nextNode;
+    this._size--;
+    return { success: true, song: removed, index: idx, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 조회 ───
+
+  get(index) {
+    if (index < 0 || index >= this._size || !this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < index; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  search(title) {
+    if (!this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 0;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < this._size; i++) {
+      steps++;
+      if (curr.song.title === title) {
+        return { success: true, song: curr.song, index: i, steps: steps, complexity: 'O(n)' };
+      }
+      curr = curr.next;
+    }
+    return { success: false, song: null, index: -1, steps: steps, complexity: 'O(n)' };
+  }
+
+  // ─── 재생 제어 ───
+
+  play(index) {
+    if (index < 0 || index >= this._size || !this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)' };
+    }
+    var steps = 1;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < index; i++) {
+      curr = curr.next;
+      steps++;
+    }
+    this._current = curr;
+    return { success: true, song: curr.song, index: index, steps: steps, complexity: 'O(n)' };
+  }
+
+  /**
+   * next - O(1): _current = _current.next (자동 순환!)
+   * @returns {{ success, song, index, steps, complexity, looped }}
+   */
+  next() {
+    if (this._size === 0 || !this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(1)', looped: false };
+    }
+    if (!this._current) {
+      this._current = this._tail.next; // head
+      return { success: true, song: this._current.song, index: 0, steps: 1, complexity: 'O(1)', looped: false };
+    }
+    this._current = this._current.next;
+    var head = this._tail.next;
+    var looped = (this._current === head);
+    return { success: true, song: this._current.song, index: this._indexOf(this._current), steps: 1, complexity: 'O(1)', looped: looped };
+  }
+
+  /**
+   * prev - O(n): head부터 순회하여 이전 노드 탐색
+   */
+  prev() {
+    if (this._size === 0 || !this._current || !this._tail) {
+      return { success: false, song: null, index: -1, steps: 0, complexity: 'O(n)', looped: false };
+    }
+    var steps = 1;
+    var curr = this._tail.next; // head
+    while (curr.next !== this._current) {
+      curr = curr.next;
+      steps++;
+    }
+    this._current = curr;
+    var head = this._tail.next;
+    var looped = (this._current === this._tail);
+    return { success: true, song: this._current.song, index: this._indexOf(this._current), steps: steps, complexity: 'O(n)', looped: looped };
+  }
+
+  current() {
+    if (!this._current) {
+      return { song: null, index: -1 };
+    }
+    return { song: this._current.song, index: this._indexOf(this._current) };
+  }
+
+  // ─── 유틸리티 ───
+
+  size() {
+    return this._size;
+  }
+
+  toArray() {
+    var result = [];
+    if (!this._tail) return result;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < this._size; i++) {
+      result.push(curr.song);
+      curr = curr.next;
+    }
+    return result;
+  }
+
+  /**
+   * 노드의 인덱스를 반환 (내부 헬퍼)
+   * @param {CNode} node
+   * @returns {number}
+   */
+  _indexOf(node) {
+    if (!this._tail) return -1;
+    var curr = this._tail.next; // head
+    for (var i = 0; i < this._size; i++) {
+      if (curr === node) return i;
+      curr = curr.next;
+    }
+    return -1;
+  }
+}
+
+</script>
+<script>
+/**
+ * NodeRenderer - 자료구조별 노드 시각화 렌더러
+ *
+ * 각 자료구조(ArrayList, SinglyLinked, DoublyLinked, CircularLinked)에 대해
+ * HTML 기반 노드 다이어그램을 렌더링한다.
+ *
+ * Class-oriented vanilla JS, no ES modules.
+ */
+
+// eslint-disable-next-line no-unused-vars
+var NodeRenderer = (function () {
+  'use strict';
+
+  /**
+   * @constructor
+   * @param {HTMLElement} containerEl - 노드를 렌더링할 컨테이너 요소
+   */
+  function NodeRenderer(containerEl) {
+    if (!containerEl) {
+      throw new Error('NodeRenderer: containerEl is required');
+    }
+    this._container = containerEl;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 내부 유틸리티
+  // ---------------------------------------------------------------------------
+
+  /**
+   * HTML 특수 문자를 이스케이프한다.
+   * @param {string} str - 원본 문자열
+   * @returns {string} 이스케이프된 문자열
+   */
+  NodeRenderer.prototype._escapeHtml = function (str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  };
+
+  /**
+   * 제목을 최대 4자로 잘라 반환한다.
+   * @param {string} title - 원본 제목
+   * @returns {string} 잘린 제목
+   */
+  NodeRenderer.prototype._truncateTitle = function (title) {
+    if (!title) return '';
+    return title;
+  };
+
+  /**
+   * 빈 목록 안내 HTML을 반환한다.
+   * @returns {string} 빈 목록 HTML
+   */
+  NodeRenderer.prototype._emptyHtml = function () {
+    return '<span style="color:var(--dim)">\uBE48 \uBAA9\uB85D</span>';
+  };
+
+  /**
+   * 리스트에서 배열과 현재 인덱스를 추출한다.
+   * @param {Object} list - toArray(), current() 메서드를 가진 리스트 객체
+   * @returns {{ arr: Array, curIdx: number }}
+   */
+  NodeRenderer.prototype._extractListData = function (list) {
+    var arr = list.toArray();
+    var cur = list.current();
+    var curIdx = cur ? cur.index : -1;
+    return { arr: arr, curIdx: curIdx };
+  };
+
+  // ---------------------------------------------------------------------------
+  // 노드 블록 생성 헬퍼
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 단일 노드 블록 HTML을 생성한다.
+   * @param {string} title   - 곡 제목
+   * @param {string} subText - 하위 텍스트 (인덱스 또는 "node")
+   * @param {boolean} isCurrent - 현재 재생 중 여부
+   * @param {string} [tagClass] - 추가 CSS 클래스 (hd-t, tl-t 등)
+   * @returns {string} HTML 문자열
+   */
+  NodeRenderer.prototype._buildNodeBlock = function (title, subText, isCurrent, tagClass) {
+    var cls = isCurrent ? ' cur' : '';
+    if (tagClass) {
+      cls += ' ' + tagClass;
+    }
+    var safeTitle = this._escapeHtml(this._truncateTitle(title));
+    var safeSub = this._escapeHtml(subText);
+    return '<div class="n">' +
+      '<div class="nb' + cls + '">' +
+      '<span class="vl">' + safeTitle + '</span>' +
+      '<span class="su">' + safeSub + '</span>' +
+      '</div>' +
+      '</div>';
+  };
+
+  /**
+   * 화살표 HTML을 생성한다.
+   * @param {string} symbol - 화살표 문자 (→, ⇄, │, ← 등)
+   * @param {boolean} [isActive] - 활성 상태 여부
+   * @returns {string} HTML 문자열
+   */
+  NodeRenderer.prototype._buildArrow = function (symbol, isActive) {
+    var cls = isActive ? ' on' : '';
+    return '<span class="aw' + cls + '">' + symbol + '</span>';
+  };
+
+  /**
+   * null 터미널 노드 HTML을 생성한다.
+   * @returns {string} HTML 문자열
+   */
+  NodeRenderer.prototype._buildNull = function () {
+    return '<div class="nul">null</div>';
+  };
+
+  /**
+   * 순환 참조 표시 HTML을 생성한다.
+   * @returns {string} HTML 문자열
+   */
+  NodeRenderer.prototype._buildCircular = function () {
+    return '<div class="circ">\u21BA HEAD</div>';
+  };
+
+  // ---------------------------------------------------------------------------
+  // 공개 렌더링 메서드
+  // ---------------------------------------------------------------------------
+
+  /**
+   * ArrayList 시각화를 렌더링한다.
+   *
+   * 배열의 각 요소를 인덱스와 함께 블록으로 표시하고,
+   * 요소 사이에 │ 구분자를 넣는다.
+   *
+   * @param {Object} list - toArray(), current() 메서드를 가진 리스트 객체
+   */
+  NodeRenderer.prototype.renderArrayList = function (list) {
+    var data = this._extractListData(list);
+    var arr = data.arr;
+    var curIdx = data.curIdx;
+    var html = '';
+
+    if (arr.length === 0) {
+      this._container.innerHTML = this._emptyHtml();
+      return;
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+      var isCurrent = (i === curIdx);
+      html += this._buildNodeBlock(arr[i].title, '[' + i + ']', isCurrent, '');
+    }
+
+    this._container.innerHTML = html;
+  };
+
+  /**
+   * 단방향 연결 리스트 시각화를 렌더링한다.
+   *
+   * head → node → node → ... → null 형태로 표시한다.
+   * 첫 번째 노드에는 HEAD 라벨(.hd-t)을 붙인다.
+   *
+   * @param {Object} list - toArray(), current() 메서드를 가진 리스트 객체
+   */
+  NodeRenderer.prototype.renderSinglyLinked = function (list) {
+    var data = this._extractListData(list);
+    var arr = data.arr;
+    var curIdx = data.curIdx;
+    var html = '';
+
+    if (arr.length === 0) {
+      html += this._buildArrow('\u2192', false);
+      html += this._buildNull();
+      this._container.innerHTML = html;
+      return;
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+      var isCurrent = (i === curIdx);
+      var tag = '';
+      if (i === 0) tag += 'hd-t';
+      if (i === arr.length - 1) {
+        tag += (tag ? ' ' : '') + 'tl-t';
+      }
+      html += this._buildNodeBlock(arr[i].title, 'node', isCurrent, tag);
+
+      var arrowActive = (i === curIdx);
+      if (i < arr.length - 1) {
+        html += this._buildArrow('\u2192', arrowActive);
+      }
+    }
+
+    html += this._buildArrow('\u2192', false);
+    html += this._buildNull();
+
+    this._container.innerHTML = html;
+  };
+
+  /**
+   * 양방향 연결 리스트 시각화를 렌더링한다.
+   *
+   * null ← head ⇄ node ⇄ ... ⇄ tail → null 형태로 표시한다.
+   * 첫 번째 노드에 HEAD(.hd-t), 마지막 노드에 TAIL(.tl-t) 라벨을 붙인다.
+   *
+   * @param {Object} list - toArray(), current() 메서드를 가진 리스트 객체
+   */
+  NodeRenderer.prototype.renderDoublyLinked = function (list) {
+    var data = this._extractListData(list);
+    var arr = data.arr;
+    var curIdx = data.curIdx;
+    var html = '';
+
+    html += this._buildNull();
+    html += this._buildArrow('\u2190', false);
+
+    if (arr.length === 0) {
+      this._container.innerHTML = html;
+      return;
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+      var isCurrent = (i === curIdx);
+      var tag = '';
+      if (i === 0) tag += 'hd-t';
+      if (i === arr.length - 1) {
+        tag += (tag ? ' ' : '') + 'tl-t';
+      }
+      html += this._buildNodeBlock(arr[i].title, 'node', isCurrent, tag);
+
+      if (i < arr.length - 1) {
+        var arrowActive = (i === curIdx || i + 1 === curIdx);
+        html += this._buildArrow('\u27F7', arrowActive);
+      }
+    }
+
+    html += this._buildArrow('\u2192', false);
+    html += this._buildNull();
+
+    this._container.innerHTML = html;
+  };
+
+  /**
+   * 순환 연결 리스트 시각화를 렌더링한다.
+   *
+   * node → node → ... → ↩head 형태로 표시한다.
+   * 첫 번째 노드에 HEAD(.hd-t), 마지막 노드에 TAIL(.tl-t) 라벨을 붙인다.
+   *
+   * @param {Object} list - toArray(), current() 메서드를 가진 리스트 객체
+   */
+  NodeRenderer.prototype.renderCircularLinked = function (list) {
+    var data = this._extractListData(list);
+    var arr = data.arr;
+    var curIdx = data.curIdx;
+    var html = '';
+
+    if (arr.length === 0) {
+      this._container.innerHTML = this._emptyHtml();
+      return;
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+      var isCurrent = (i === curIdx);
+      var tag = '';
+      if (i === 0) tag += 'hd-t';
+      if (i === arr.length - 1) {
+        tag += (tag ? ' ' : '') + 'tl-t';
+      }
+      html += this._buildNodeBlock(arr[i].title, 'node', isCurrent, tag);
+
+      var arrowActive = (i === curIdx);
+      html += this._buildArrow('\u2192', arrowActive);
+    }
+
+    html += this._buildCircular();
+
+    this._container.innerHTML = html;
+  };
+
+  // ---------------------------------------------------------------------------
+  // 노드 하이라이트 및 초기화
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 특정 인덱스의 노드에 하이라이트 클래스를 일시적으로 추가한다.
+   * 600ms 후 자동으로 제거된다.
+   *
+   * @param {number} index     - 하이라이트할 노드의 인덱스
+   * @param {string} className - 추가할 CSS 클래스명
+   */
+  NodeRenderer.prototype.highlightNode = function (index, className) {
+    var nodes = this._container.querySelectorAll('.nb');
+    if (index < 0 || index >= nodes.length) return;
+
+    var targetNode = nodes[index];
+    targetNode.classList.add(className);
+
+    setTimeout(function () {
+      targetNode.classList.remove(className);
+    }, 600);
+  };
+
+  /**
+   * 컨테이너의 내용을 초기화한다.
+   */
+  NodeRenderer.prototype.clear = function () {
+    this._container.innerHTML = '';
+  };
+
+  return NodeRenderer;
+})();
+
+</script>
+<script>
+/**
+ * Logger - 자료구조 연산 로그 기록기
+ */
+
+var Logger = (function () {
+  'use strict';
+
+  var MAX_ENTRIES = 50;
+
+  function Logger(containerEl) {
+    this._container = containerEl;
+    this._entries = [];
+  }
+
+  Logger.prototype._escapeHtml = function (str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  };
+
+  Logger.prototype._addEntry = function (level, message) {
+    var time = new Date().toLocaleTimeString('ko-KR', {
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+    this._entries.unshift({ time: time, level: level, message: message });
+    if (this._entries.length > MAX_ENTRIES) this._entries.pop();
+    this._render();
+  };
+
+  Logger.prototype.info = function (message) {
+    this._addEntry('info', message);
+  };
+
+  Logger.prototype.warn = function (message) {
+    this._addEntry('warn', message);
+  };
+
+  Logger.prototype.error = function (message) {
+    this._addEntry('error', message);
+  };
+
+  Logger.prototype.log = function (operation, params, result) {
+    var parts = [operation];
+    if (params && params.title) parts.push('"' + params.title + '"');
+    if (result && result.complexity) parts.push(result.complexity);
+    this.info(parts.join(' | '));
+  };
+
+  Logger.prototype._render = function () {
+    if (!this._container) return;
+    var html = '';
+    for (var i = 0; i < this._entries.length; i++) {
+      var e = this._entries[i];
+      var cls = e.level === 'warn' ? ' lg-w' : e.level === 'error' ? ' lg-e' : '';
+      html += '<div class="lg-e' + cls + '">[' + e.time + '] ' + this._escapeHtml(e.message) + '</div>';
+    }
+    this._container.innerHTML = html;
+  };
+
+  Logger.prototype.clear = function () {
+    this._entries = [];
+    this._render();
+  };
+
+  return Logger;
+})();
+
+</script>
+<script>
+/**
+ * TabController - 탭 전환을 관리하는 컨트롤러
+ */
+class TabController {
+  /**
+   * @param {HTMLElement} tabBarEl - 탭 바 요소
+   */
+  constructor(tabBarEl) {
+    this._tabBar = tabBarEl;
+    this._callbacks = [];
+    this._currentTab = null;
+    this._bindEvents();
+  }
+
+  /**
+   * 탭 클릭 이벤트 바인딩
+   */
+  _bindEvents() {
+    var self = this;
+    var tabs = this._tabBar.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      (function (tab) {
+        tab.addEventListener('click', function () {
+          var tabName = tab.getAttribute('data-t');
+          if (tabName) {
+            self.switchTo(tabName);
+          }
+        });
+      })(tabs[i]);
+    }
+  }
+
+  /**
+   * 지정한 탭으로 전환
+   * @param {string} tabName - 탭 이름 (data-t 속성 값)
+   */
+  switchTo(tabName) {
+    var panels = document.querySelectorAll('.pnl');
+    for (var i = 0; i < panels.length; i++) {
+      panels[i].classList.remove('on');
+    }
+    var target = document.getElementById('p-' + tabName);
+    if (target) {
+      target.classList.add('on');
+    }
+    var tabs = this._tabBar.querySelectorAll('.tab');
+    for (var j = 0; j < tabs.length; j++) {
+      tabs[j].classList.remove('on');
+      if (tabs[j].getAttribute('data-t') === tabName) {
+        tabs[j].classList.add('on');
+      }
+    }
+    this._currentTab = tabName;
+    for (var k = 0; k < this._callbacks.length; k++) {
+      try {
+        this._callbacks[k](tabName);
+      } catch (e) {
+        console.error('TabController callback error:', e);
+      }
+    }
+  }
+
+  /**
+   * 탭 전환 시 호출될 콜백 등록
+   * @param {function} callback - function(tabName)
+   */
+  onSwitch(callback) {
+    if (typeof callback === 'function') {
+      this._callbacks.push(callback);
+    }
+  }
+}
+
+</script>
+<script>
+/**
+ * PlayerController - 재생 제어 (현재는 컨트롤러에서 직접 처리하므로 빈 클래스)
+ */
+class PlayerController {
+  constructor(npEl, list) {
+    this._npEl = npEl;
+    this._list = list;
+  }
+}
+
+</script>
+<script>
+/**
+ * ALController - ArrayList 탭 UI 컨트롤러
+ */
+class ALController {
+  constructor(panelId, list, renderer, logger) {
+    this._panel = document.getElementById(panelId);
+    this._list = list;
+    this._renderer = renderer;
+    this._logger = logger;
+  }
+
+  init() {
+    if (!this._panel) return;
+    this._nmInput = document.getElementById('al-nm');
+    this._ixInput = document.getElementById('al-idx');
+    var self = this;
+
+    document.getElementById('al-add').addEventListener('click', function () { self.handleInsert(); });
+    document.getElementById('al-del').addEventListener('click', function () { self.handleDelete(); });
+    document.getElementById('al-find').addEventListener('click', function () { self.handleSearch(); });
+    document.getElementById('al-shuf').addEventListener('click', function () { self.handleShuffle(); });
+    document.getElementById('al-play').addEventListener('click', function () { self.handleToggle(); });
+    document.getElementById('al-next').addEventListener('click', function () { self.handleNext(); });
+    document.getElementById('al-prev').addEventListener('click', function () { self.handlePrev(); });
+
+    this.refresh();
+  }
+
+  handleInsert() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    var ix = this._ixInput ? parseInt(this._ixInput.value, 10) : NaN;
+    if (!name) { this._logger.warn('곡 이름을 입력하세요'); return; }
+    if (isNaN(ix)) ix = this._list.size();
+    var song = new Song(name, 'Unknown', 200);
+    var result = this._list.insertAt(ix, song);
+    if (result.success) {
+      this._logger.info('insertAt(' + ix + ', "' + name + '") | ' + result.complexity + ' | ' + result.steps + '개 요소 이동');
+    } else {
+      this._logger.error('삽입 실패: 유효하지 않은 인덱스 ' + ix);
+    }
+    this.refresh();
+  }
+
+  handleDelete() {
+    var ix = this._ixInput ? parseInt(this._ixInput.value, 10) : -1;
+    if (isNaN(ix) || ix < 0) { this._logger.warn('삭제할 인덱스를 입력하세요'); return; }
+    var result = this._list.deleteAt(ix);
+    if (result.success) {
+      this._logger.info('deleteAt(' + ix + ') -> "' + result.song.title + '" | ' + result.complexity);
+    } else {
+      this._logger.error('삭제 실패: 유효하지 않은 인덱스 ' + ix);
+    }
+    this.refresh();
+  }
+
+  handleSearch() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('검색할 곡 이름을 입력하세요'); return; }
+    var result = this._list.search(name);
+    if (result.success) {
+      this._logger.info('search("' + name + '") -> 인덱스 ' + result.index + ' | ' + result.steps + '단계');
+      this._renderer.highlightNode(result.index, 'hl');
+    } else {
+      this._logger.warn('search("' + name + '") -> 못 찾음 | ' + result.steps + '단계');
+    }
+  }
+
+  handleShuffle() {
+    var result = this._list.shuffle();
+    this._logger.info('shuffle() | ' + result.steps + '회 교환');
+    this.refresh();
+  }
+
+  handleToggle() {
+    var cur = this._list.current();
+    if (!cur.song) {
+      if (this._list.size() > 0) this.handlePlay(0);
+    }
+  }
+
+  handlePlay(index) {
+    var result = this._list.play(index);
+    if (result.success) {
+      this._logger.info('play(' + index + ') -> "' + result.song.title + '"');
+    }
+    this.refresh();
+  }
+
+  handleNext() {
+    var result = this._list.next();
+    if (result.success) {
+      this._logger.info('next() -> "' + result.song.title + '" | ' + result.complexity);
+    } else {
+      this._logger.warn('next() -> 마지막 곡입니다');
+    }
+    this.refresh();
+  }
+
+  handlePrev() {
+    var result = this._list.prev();
+    if (result.success) {
+      this._logger.info('prev() -> "' + result.song.title + '" | ' + result.complexity);
+    } else {
+      this._logger.warn('prev() -> 첫 번째 곡입니다');
+    }
+    this.refresh();
+  }
+
+  refresh() {
+    this._renderer.renderArrayList(this._list);
+    this._renderTracks();
+    this._updateNowPlaying();
+  }
+
+  _updateNowPlaying() {
+    var npEl = document.getElementById('al-np');
+    if (!npEl) return;
+    var cur = this._list.current();
+    npEl.textContent = cur.song ? '▶ ' + cur.song.toString() : '곡을 클릭하거나 ▶ 버튼을 누르세요';
+  }
+
+  _renderTracks() {
+    var tksEl = document.getElementById('al-tks');
+    if (!tksEl) return;
+    var arr = this._list.toArray();
+    var cur = this._list.current();
+    var html = '';
+    var self = this;
+    for (var i = 0; i < arr.length; i++) {
+      var active = (cur.index === i) ? ' on' : '';
+      html += '<div class="track' + active + '" data-ix="' + i + '">' +
+        '<span class="tn">' + (i + 1) + '</span>' +
+        '<span class="tt">' + arr[i].toString() + '</span></div>';
+    }
+    tksEl.innerHTML = html;
+    var tracks = tksEl.querySelectorAll('.track');
+    for (var j = 0; j < tracks.length; j++) {
+      (function (idx) {
+        tracks[idx].addEventListener('click', function () { self.handlePlay(idx); });
+      })(j);
+    }
+    var cntEl = document.getElementById('al-cnt');
+    if (cntEl) cntEl.textContent = arr.length + '곡';
+  }
+}
+
+</script>
+<script>
+/**
+ * SLController - SinglyLinkedList 탭 UI 컨트롤러
+ */
+class SLController {
+  constructor(panelId, list, renderer, logger) {
+    this._panel = document.getElementById(panelId);
+    this._list = list;
+    this._renderer = renderer;
+    this._logger = logger;
+  }
+
+  init() {
+    if (!this._panel) return;
+    this._nmInput = document.getElementById('sl-nm');
+    var self = this;
+
+    document.getElementById('sl-addF').addEventListener('click', function () { self.insertFront(); });
+    document.getElementById('sl-addL').addEventListener('click', function () { self.insertBack(); });
+    document.getElementById('sl-delF').addEventListener('click', function () { self.deleteFront(); });
+    document.getElementById('sl-find').addEventListener('click', function () { self.handleSearch(); });
+    document.getElementById('sl-play').addEventListener('click', function () { self.handleToggle(); });
+    document.getElementById('sl-next').addEventListener('click', function () { self.handleNext(); });
+    document.getElementById('sl-prev').addEventListener('click', function () { self.handlePrev(); });
+
+    this.refresh();
+  }
+
+  insertFront() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('곡 이름을 입력하세요'); return; }
+    var song = new Song(name, 'Unknown', 200);
+    var result = this._list.insertFirst(song);
+    if (result.success) {
+      this._logger.info('insertFirst("' + name + '") | ' + result.complexity + ' | ' + result.steps + '단계');
+    }
+    this.refresh();
+  }
+
+  insertBack() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('곡 이름을 입력하세요'); return; }
+    var song = new Song(name, 'Unknown', 200);
+    var result = this._list.insertLast(song);
+    if (result.success) {
+      this._logger.info('insertLast("' + name + '") | ' + result.complexity + ' | ' + result.steps + '단계');
+    }
+    this.refresh();
+  }
+
+  deleteFront() {
+    var result = this._list.deleteFirst();
+    if (result.success) {
+      this._logger.info('deleteFirst() -> "' + result.song.title + '" | ' + result.complexity);
+    } else {
+      this._logger.warn('삭제 실패: 리스트가 비어 있습니다');
+    }
+    this.refresh();
+  }
+
+  handleSearch() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('검색할 곡 이름을 입력하세요'); return; }
+    var result = this._list.search(name);
+    if (result.success) {
+      this._logger.info('search("' + name + '") -> 인덱스 ' + result.index + ' | ' + result.steps + '단계');
+      this._renderer.highlightNode(result.index, 'hl');
+    } else {
+      this._logger.warn('search("' + name + '") -> 못 찾음 | ' + result.steps + '단계');
+    }
+  }
+
+  handleToggle() {
+    var cur = this._list.current();
+    if (!cur.song && this._list.size() > 0) this.handlePlay(0);
+  }
+
+  handlePlay(index) {
+    var result = this._list.play(index);
+    if (result.success) {
+      this._logger.info('play(' + index + ') -> "' + result.song.title + '" | O(n) | ' + result.steps + '단계');
+    }
+    this.refresh();
+  }
+
+  handleNext() {
+    var result = this._list.next();
+    if (result.success) {
+      this._logger.info('next() -> "' + result.song.title + '" | O(1)');
+    } else {
+      this._logger.warn('next() -> 마지막 곡입니다');
+    }
+    this.refresh();
+  }
+
+  handlePrev() {
+    var result = this._list.prev();
+    if (result.success) {
+      this._logger.info('prev() -> "' + result.song.title + '" | O(n) | ' + result.steps + '단계 (head부터 순회)');
+    } else {
+      this._logger.warn('prev() -> 첫 번째 곡입니다');
+    }
+    this.refresh();
+  }
+
+  refresh() {
+    this._renderer.renderSinglyLinked(this._list);
+    this._renderTracks();
+    this._updateNowPlaying();
+  }
+
+  _updateNowPlaying() {
+    var npEl = document.getElementById('sl-np');
+    if (!npEl) return;
+    var cur = this._list.current();
+    npEl.textContent = cur.song ? '▶ ' + cur.song.toString() : '곡을 클릭하거나 ▶ 버튼을 누르세요';
+  }
+
+  _renderTracks() {
+    var tksEl = document.getElementById('sl-tks');
+    if (!tksEl) return;
+    var arr = this._list.toArray();
+    var cur = this._list.current();
+    var html = '';
+    var self = this;
+    for (var i = 0; i < arr.length; i++) {
+      var active = (cur.index === i) ? ' on' : '';
+      html += '<div class="track' + active + '" data-ix="' + i + '">' +
+        '<span class="tn">' + (i + 1) + '</span>' +
+        '<span class="tt">' + arr[i].toString() + '</span></div>';
+    }
+    tksEl.innerHTML = html;
+    var tracks = tksEl.querySelectorAll('.track');
+    for (var j = 0; j < tracks.length; j++) {
+      (function (idx) {
+        tracks[idx].addEventListener('click', function () { self.handlePlay(idx); });
+      })(j);
+    }
+    var cntEl = document.getElementById('sl-cnt');
+    if (cntEl) cntEl.textContent = arr.length + '곡';
+  }
+}
+
+</script>
+<script>
+/**
+ * DLController - DoublyLinkedList 탭 UI 컨트롤러
+ */
+class DLController {
+  constructor(panelId, list, renderer, logger) {
+    this._panel = document.getElementById(panelId);
+    this._list = list;
+    this._renderer = renderer;
+    this._logger = logger;
+  }
+
+  init() {
+    if (!this._panel) return;
+    this._nmInput = document.getElementById('dl-nm');
+    var self = this;
+
+    document.getElementById('dl-addF').addEventListener('click', function () { self.insertFront(); });
+    document.getElementById('dl-addL').addEventListener('click', function () { self.insertBack(); });
+    document.getElementById('dl-delC').addEventListener('click', function () { self.deleteCurrent(); });
+    document.getElementById('dl-find').addEventListener('click', function () { self.handleSearch(); });
+    document.getElementById('dl-play').addEventListener('click', function () { self.handleToggle(); });
+    document.getElementById('dl-next').addEventListener('click', function () { self.handleNext(); });
+    document.getElementById('dl-prev').addEventListener('click', function () { self.handlePrev(); });
+
+    this.refresh();
+  }
+
+  insertFront() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('곡 이름을 입력하세요'); return; }
+    var song = new Song(name, 'Unknown', 200);
+    var result = this._list.insertFirst(song);
+    if (result.success) {
+      this._logger.info('insertFirst("' + name + '") | ' + result.complexity);
+    }
+    this.refresh();
+  }
+
+  insertBack() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('곡 이름을 입력하세요'); return; }
+    var song = new Song(name, 'Unknown', 200);
+    var result = this._list.insertLast(song);
+    if (result.success) {
+      this._logger.info('insertLast("' + name + '") | ' + result.complexity);
+    }
+    this.refresh();
+  }
+
+  deleteCurrent() {
+    var result = this._list.deleteCurrent();
+    if (result.success) {
+      this._logger.info('deleteCurrent() -> "' + result.song.title + '" | ' + result.complexity + ' O(1) 즉시 삭제!');
+    } else {
+      this._logger.warn('삭제 실패: 현재 재생 중인 곡이 없습니다');
+    }
+    this.refresh();
+  }
+
+  handleSearch() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('검색할 곡 이름을 입력하세요'); return; }
+    var result = this._list.search(name);
+    if (result.success) {
+      this._logger.info('search("' + name + '") -> 인덱스 ' + result.index + ' | ' + result.steps + '단계');
+      this._renderer.highlightNode(result.index, 'hl');
+    } else {
+      this._logger.warn('search("' + name + '") -> 못 찾음 | ' + result.steps + '단계');
+    }
+  }
+
+  handleToggle() {
+    var cur = this._list.current();
+    if (!cur.song && this._list.size() > 0) this.handlePlay(0);
+  }
+
+  handlePlay(index) {
+    var result = this._list.play(index);
+    if (result.success) {
+      this._logger.info('play(' + index + ') -> "' + result.song.title + '"');
+    }
+    this.refresh();
+  }
+
+  handleNext() {
+    var result = this._list.next();
+    if (result.success) {
+      this._logger.info('next() -> "' + result.song.title + '" | O(1)');
+    } else {
+      this._logger.warn('next() -> 마지막 곡입니다');
+    }
+    this.refresh();
+  }
+
+  handlePrev() {
+    var result = this._list.prev();
+    if (result.success) {
+      this._logger.info('prev() -> "' + result.song.title + '" | O(1) (prev 포인터!)');
+    } else {
+      this._logger.warn('prev() -> 첫 번째 곡입니다');
+    }
+    this.refresh();
+  }
+
+  refresh() {
+    this._renderer.renderDoublyLinked(this._list);
+    this._renderTracks();
+    this._updateNowPlaying();
+  }
+
+  _updateNowPlaying() {
+    var npEl = document.getElementById('dl-np');
+    if (!npEl) return;
+    var cur = this._list.current();
+    npEl.textContent = cur.song ? '▶ ' + cur.song.toString() : '곡을 클릭하거나 ▶ 버튼을 누르세요';
+  }
+
+  _renderTracks() {
+    var tksEl = document.getElementById('dl-tks');
+    if (!tksEl) return;
+    var arr = this._list.toArray();
+    var cur = this._list.current();
+    var html = '';
+    var self = this;
+    for (var i = 0; i < arr.length; i++) {
+      var active = (cur.index === i) ? ' on' : '';
+      html += '<div class="track' + active + '" data-ix="' + i + '">' +
+        '<span class="tn">' + (i + 1) + '</span>' +
+        '<span class="tt">' + arr[i].toString() + '</span></div>';
+    }
+    tksEl.innerHTML = html;
+    var tracks = tksEl.querySelectorAll('.track');
+    for (var j = 0; j < tracks.length; j++) {
+      (function (idx) {
+        tracks[idx].addEventListener('click', function () { self.handlePlay(idx); });
+      })(j);
+    }
+    var cntEl = document.getElementById('dl-cnt');
+    if (cntEl) cntEl.textContent = arr.length + '곡';
+  }
+}
+
+</script>
+<script>
+/**
+ * CLController - CircularLinkedList 탭 UI 컨트롤러
+ */
+class CLController {
+  constructor(panelId, list, renderer, logger) {
+    this._panel = document.getElementById(panelId);
+    this._list = list;
+    this._renderer = renderer;
+    this._logger = logger;
+    this._autoInterval = null;
+    this._autoPlaying = false;
+  }
+
+  init() {
+    if (!this._panel) return;
+    this._nmInput = document.getElementById('cl-nm');
+    var self = this;
+
+    document.getElementById('cl-add').addEventListener('click', function () { self.insert(); });
+    document.getElementById('cl-delC').addEventListener('click', function () { self.deleteCurrent(); });
+    document.getElementById('cl-find').addEventListener('click', function () { self.handleSearch(); });
+    document.getElementById('cl-play').addEventListener('click', function () { self.handleToggle(); });
+    document.getElementById('cl-next').addEventListener('click', function () { self.handleNext(); });
+    document.getElementById('cl-prev').addEventListener('click', function () { self.handlePrev(); });
+    document.getElementById('cl-auto').addEventListener('click', function () { self.autoToggle(); });
+
+    this.refresh();
+  }
+
+  insert() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('곡 이름을 입력하세요'); return; }
+    var song = new Song(name, 'Unknown', 200);
+    var result = this._list.insertLast(song);
+    if (result.success) {
+      this._logger.info('insertLast("' + name + '") | ' + result.complexity);
+    }
+    this.refresh();
+  }
+
+  deleteCurrent() {
+    var result = this._list.deleteCurrent();
+    if (result.success) {
+      this._logger.info('deleteCurrent() -> "' + result.song.title + '" | ' + result.complexity);
+    } else {
+      this._logger.warn('삭제 실패: 현재 재생 중인 곡이 없습니다');
+    }
+    this.refresh();
+  }
+
+  handleSearch() {
+    var name = this._nmInput ? this._nmInput.value.trim() : '';
+    if (!name) { this._logger.warn('검색할 곡 이름을 입력하세요'); return; }
+    var result = this._list.search(name);
+    if (result.success) {
+      this._logger.info('search("' + name + '") -> 인덱스 ' + result.index + ' | ' + result.steps + '단계');
+      this._renderer.highlightNode(result.index, 'hl');
+    } else {
+      this._logger.warn('search("' + name + '") -> 못 찾음 | ' + result.steps + '단계');
+    }
+  }
+
+  handleToggle() {
+    var cur = this._list.current();
+    if (!cur.song && this._list.size() > 0) this.handlePlay(0);
+  }
+
+  handlePlay(index) {
+    var result = this._list.play(index);
+    if (result.success) {
+      this._logger.info('play(' + index + ') -> "' + result.song.title + '"');
+    }
+    this.refresh();
+  }
+
+  handleNext() {
+    var result = this._list.next();
+    if (result.success) {
+      var msg = 'next() -> "' + result.song.title + '" | O(1)';
+      if (result.looped) msg += ' | 🔁 처음으로 순환!';
+      this._logger.info(msg);
+    } else {
+      this._logger.warn('next() -> 리스트가 비어 있습니다');
+    }
+    this.refresh();
+  }
+
+  handlePrev() {
+    var result = this._list.prev();
+    if (result.success) {
+      var msg = 'prev() -> "' + result.song.title + '" | O(n) | ' + result.steps + '단계';
+      if (result.looped) msg += ' | 🔁 끝으로 순환!';
+      this._logger.info(msg);
+    } else {
+      this._logger.warn('prev() -> 리스트가 비어 있습니다');
+    }
+    this.refresh();
+  }
+
+  autoToggle() {
+    var self = this;
+    var btnEl = document.getElementById('cl-auto');
+    if (this._autoPlaying) {
+      clearInterval(this._autoInterval);
+      this._autoInterval = null;
+      this._autoPlaying = false;
+      if (btnEl) btnEl.classList.remove('on');
+      this._logger.info('자동 반복 재생 중지');
+    } else {
+      if (this._list.size() === 0) {
+        this._logger.warn('리스트가 비어 자동 재생 불가');
+        return;
+      }
+      var cur = this._list.current();
+      if (!cur.song) this._list.play(0);
+      this._autoPlaying = true;
+      if (btnEl) btnEl.classList.add('on');
+      this._logger.info('🔁 자동 반복 재생 시작');
+      this._autoInterval = setInterval(function () { self.handleNext(); }, 2000);
+    }
+  }
+
+  refresh() {
+    this._renderer.renderCircularLinked(this._list);
+    this._renderTracks();
+    this._updateNowPlaying();
+  }
+
+  _updateNowPlaying() {
+    var npEl = document.getElementById('cl-np');
+    if (!npEl) return;
+    var cur = this._list.current();
+    npEl.textContent = cur.song ? '▶ ' + cur.song.toString() : '곡을 클릭하거나 ▶ 버튼을 누르세요';
+  }
+
+  _renderTracks() {
+    var tksEl = document.getElementById('cl-tks');
+    if (!tksEl) return;
+    var arr = this._list.toArray();
+    var cur = this._list.current();
+    var html = '';
+    var self = this;
+    for (var i = 0; i < arr.length; i++) {
+      var active = (cur.index === i) ? ' on' : '';
+      html += '<div class="track' + active + '" data-ix="' + i + '">' +
+        '<span class="tn">' + (i + 1) + '</span>' +
+        '<span class="tt">' + arr[i].toString() + '</span></div>';
+    }
+    tksEl.innerHTML = html;
+    var tracks = tksEl.querySelectorAll('.track');
+    for (var j = 0; j < tracks.length; j++) {
+      (function (idx) {
+        tracks[idx].addEventListener('click', function () { self.handlePlay(idx); });
+      })(j);
+    }
+    var cntEl = document.getElementById('cl-cnt');
+    if (cntEl) cntEl.textContent = arr.length + '곡';
+  }
+}
+
+</script>
+<script>
+/**
+ * CompareView - 비교 탭 (HTML에 이미 테이블 포함, JS는 초기화만)
+ */
+class CompareView {
+  constructor(panelEl) {
+    this._panel = panelEl;
+  }
+
+  init() {
+    // HTML에 이미 비교 테이블이 포함되어 있으므로 추가 렌더링 불필요
+  }
+}
+
+</script>
+<script>
+/**
+ * App - 음악 플레이리스트 데모 애플리케이션 진입점
+ */
+class App {
+  constructor() {
+    this._defaultSongs = [
+      new Song('Dynamite', 'BTS', 199),
+      new Song('Blinding Lights', 'The Weeknd', 200),
+      new Song('Shape of You', 'Ed Sheeran', 234),
+      new Song('\uBD04\uB0A0', 'BTS', 274),
+      new Song('Butter', 'BTS', 165)
+    ];
+    this._controllers = {};
+  }
+
+  /**
+   * 앱 초기화: 자료구조 생성, UI 컨트롤러 바인딩
+   */
+  init() {
+    // 4가지 자료구조 생성 및 기본 곡 추가
+    var alList = new ArrayList();
+    var slList = new SinglyLinkedList();
+    var dlList = new DoublyLinkedList();
+    var clList = new CircularLinkedList();
+
+    this._populateList(alList);
+    this._populateList(slList);
+    this._populateList(dlList);
+    this._populateList(clList);
+
+    // 탭 컨트롤러
+    var tabBarEl = document.getElementById('tab-bar');
+    var tabCtrl = new TabController(tabBarEl);
+
+    // ArrayList 컨트롤러
+    var alRenderer = new NodeRenderer(document.getElementById('al-sv'));
+    var alLogger = new Logger(document.getElementById('al-lg'));
+    var alCtrl = new ALController('p-al', alList, alRenderer, alLogger);
+    alCtrl.init();
+
+    // SinglyLinkedList 컨트롤러
+    var slRenderer = new NodeRenderer(document.getElementById('sl-sv'));
+    var slLogger = new Logger(document.getElementById('sl-lg'));
+    var slCtrl = new SLController('p-sl', slList, slRenderer, slLogger);
+    slCtrl.init();
+
+    // DoublyLinkedList 컨트롤러
+    var dlRenderer = new NodeRenderer(document.getElementById('dl-sv'));
+    var dlLogger = new Logger(document.getElementById('dl-lg'));
+    var dlCtrl = new DLController('p-dl', dlList, dlRenderer, dlLogger);
+    dlCtrl.init();
+
+    // CircularLinkedList 컨트롤러
+    var clRenderer = new NodeRenderer(document.getElementById('cl-sv'));
+    var clLogger = new Logger(document.getElementById('cl-lg'));
+    var clCtrl = new CLController('p-cl', clList, clRenderer, clLogger);
+    clCtrl.init();
+
+    // CompareView
+    var comparePanel = document.getElementById('p-cmp');
+    var compareView = new CompareView(comparePanel);
+    compareView.init();
+
+    // 컨트롤러 맵 저장
+    this._controllers = {
+      al: alCtrl,
+      sl: slCtrl,
+      dl: dlCtrl,
+      cl: clCtrl
+    };
+
+    // 탭 전환 시 해당 컨트롤러 새로고침
+    var self = this;
+    tabCtrl.onSwitch(function (tabName) {
+      if (self._controllers[tabName]) {
+        self._controllers[tabName].refresh();
+      }
+    });
+
+    // 초기 탭 활성화 및 새로고침
+    tabCtrl.switchTo('al');
+  }
+
+  /**
+   * 리스트에 기본 곡 5개 추가
+   * @param {object} list - insertLast 또는 insertBack 메서드를 가진 리스트
+   */
+  _populateList(list) {
+    for (var i = 0; i < this._defaultSongs.length; i++) {
+      var song = this._defaultSongs[i];
+      if (typeof list.insertLast === 'function') {
+        list.insertLast(song);
+      } else if (typeof list.insertBack === 'function') {
+        list.insertBack(song);
+      }
+    }
+  }
+}
+
+// 앱 시작
+document.addEventListener('DOMContentLoaded', function () {
+  new App().init();
+});
+
+</script>
+
+</body>
+</html>

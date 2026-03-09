@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎵 음악 재생목록으로 배우는 리스트 자료구조</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/player.css">
+  <link rel="stylesheet" href="css/nodes.css">
+  <link rel="stylesheet" href="css/controls.css">
+  <link rel="stylesheet" href="css/log.css">
+  <link rel="stylesheet" href="css/compare.css">
+</head>
+<body>
+
+<!-- Header -->
+<div class="hd">
+  <h1>🎵 음악 재생목록으로 배우는 리스트</h1>
+  <p>같은 재생목록, 4가지 자료구조 — 무엇이 다를까?</p>
+</div>
+
+<!-- Tabs -->
+<nav class="tabs" id="tab-bar">
+  <button class="tab on" data-t="al">📋 Array List (배열 기반)</button>
+  <button class="tab" data-t="sl">➡️ Singly Linked (단방향 연결)</button>
+  <button class="tab" data-t="dl">↔️ Doubly Linked (양방향 연결)</button>
+  <button class="tab" data-t="cl">🔁 Circular Linked (순환 연결)</button>
+  <button class="tab" data-t="cmp">⚖️ 비교 (한눈에 정리)</button>
+</nav>
+
+<!-- ===== Array List Panel ===== -->
+<div class="pnl on" id="p-al">
+  <div class="info">
+    <h3>📋 Array List — 인덱스로 즉시 접근 <span class="tag">배열 기반</span></h3>
+    <p>멜론·Spotify처럼 <span class="y">번호(인덱스)로 바로 접근</span>할 수 있는 리스트. 3번 곡 틀어줘 → <span class="g">O(1) 즉시!</span> 중간 삽입 → <span class="r">뒤 곡들 밀림 O(n)</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>📋 Array List Playlist</b><span id="al-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 연속된 배열 칸</div>
+      <div class="sv" id="al-sv"></div>
+    </div>
+    <div class="tks" id="al-tks"></div>
+    <div class="np" id="al-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="al-prev">⏮</button>
+      <button class="pb main" id="al-play">▶</button>
+      <button class="pb" id="al-next">⏭</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="al-nm" placeholder="곡 이름">
+      <input class="inp wi" id="al-idx" placeholder="인덱스" type="number" min="0">
+      <button class="btn" id="al-add">추가</button>
+      <button class="btn red" id="al-del">삭제</button>
+      <button class="btn blue" id="al-find">검색</button>
+      <button class="btn purple" id="al-shuf">셔플</button>
+    </div>
+    <div class="lg" id="al-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>인덱스 접근</td><td class="g">O(1)</td><td>배열 인덱스로 즉시</td></tr>
+        <tr><td>맨 뒤 추가</td><td class="g">O(1)*</td><td>공간 있으면 즉시 (*resize 시 O(n))</td></tr>
+        <tr><td>맨 앞/중간 삽입</td><td class="r">O(n)</td><td>뒤 요소 전부 이동</td></tr>
+        <tr><td>맨 앞/중간 삭제</td><td class="r">O(n)</td><td>뒤 요소 전부 이동</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>순차 탐색</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Singly Linked List Panel ===== -->
+<div class="pnl" id="p-sl">
+  <div class="info">
+    <h3>➡️ Singly Linked List — 한 방향 체인 <span class="tag">단방향 연결</span></h3>
+    <p>각 곡이 <span class="y">다음 곡만 기억</span>. 다음곡 <span class="g">O(1)</span>, 이전곡 <span class="r">O(n) 처음부터 다시 찾아야!</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>➡️ Singly Linked Playlist</b><span id="sl-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 노드 → 노드 체인</div>
+      <div class="sv" id="sl-sv"></div>
+    </div>
+    <div class="tks" id="sl-tks"></div>
+    <div class="np" id="sl-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="sl-prev">⏮</button>
+      <button class="pb main" id="sl-play">▶</button>
+      <button class="pb" id="sl-next">⏭</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="sl-nm" placeholder="곡 이름">
+      <button class="btn" id="sl-addF">맨 앞 추가</button>
+      <button class="btn" id="sl-addL">맨 뒤 추가</button>
+      <button class="btn red" id="sl-delF">맨 앞 삭제</button>
+      <button class="btn blue" id="sl-find">검색</button>
+    </div>
+    <div class="lg" id="sl-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>맨 앞 삽입</td><td class="g">O(1)</td><td>head만 변경</td></tr>
+        <tr><td>맨 뒤 삽입</td><td class="r">O(n)</td><td>끝까지 순회 필요</td></tr>
+        <tr><td>맨 앞 삭제</td><td class="g">O(1)</td><td>head만 변경</td></tr>
+        <tr><td>맨 뒤 삭제</td><td class="r">O(n)</td><td>이전 노드 찾아야</td></tr>
+        <tr><td>인덱스 접근</td><td class="r">O(n)</td><td>처음부터 순회</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>순차 탐색</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Doubly Linked List Panel ===== -->
+<div class="pnl" id="p-dl">
+  <div class="info">
+    <h3>↔️ Doubly Linked List — 양방향 체인 <span class="tag">양방향 연결</span></h3>
+    <p>각 곡이 <span class="y">이전/다음 모두 기억</span>. 둘 다 <span class="g">O(1)!</span> 대신 <span class="r">메모리 더 씀 (trade-off)</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>↔️ Doubly Linked Playlist</b><span id="dl-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 노드 ↔ 노드 양방향</div>
+      <div class="sv" id="dl-sv"></div>
+    </div>
+    <div class="tks" id="dl-tks"></div>
+    <div class="np" id="dl-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="dl-prev">⏮</button>
+      <button class="pb main" id="dl-play">▶</button>
+      <button class="pb" id="dl-next">⏭</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="dl-nm" placeholder="곡 이름">
+      <button class="btn" id="dl-addF">맨 앞 추가</button>
+      <button class="btn" id="dl-addL">맨 뒤 추가</button>
+      <button class="btn red" id="dl-delC">현재 곡 삭제</button>
+      <button class="btn blue" id="dl-find">검색</button>
+    </div>
+    <div class="lg" id="dl-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>맨 앞/뒤 삽입</td><td class="g">O(1)</td><td>head/tail 포인터 활용</td></tr>
+        <tr><td>맨 앞/뒤 삭제</td><td class="g">O(1)</td><td>prev/next로 즉시</td></tr>
+        <tr><td>현재 노드 삭제</td><td class="g">O(1)</td><td>prev/next 바로 연결</td></tr>
+        <tr><td>이전/다음 이동</td><td class="g">O(1)</td><td>양방향 포인터</td></tr>
+        <tr><td>인덱스 접근</td><td class="r">O(n)</td><td>순회 필요</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>순차 탐색</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Circular Linked List Panel ===== -->
+<div class="pnl" id="p-cl">
+  <div class="info">
+    <h3>🔁 Circular Linked List — 끝이 없는 순환 <span class="tag">순환 연결</span></h3>
+    <p><span class="y">마지막 곡 → 첫 곡 자동 순환!</span> tail.next = head. <span class="g">전체 반복 🔁 모드</span></p>
+  </div>
+
+  <div class="pl">
+    <div class="pl-bar"><b>🔁 Circular Linked Playlist</b><span id="cl-cnt">5곡</span></div>
+    <div class="sv-wrap">
+      <div class="sv-label">내부 구조 — 순환 연결 고리</div>
+      <div class="sv" id="cl-sv"></div>
+    </div>
+    <div class="tks" id="cl-tks"></div>
+    <div class="np" id="cl-np">곡을 클릭하거나 ▶ 버튼을 누르세요</div>
+    <div class="pc">
+      <button class="pb" id="cl-prev">⏮</button>
+      <button class="pb main" id="cl-play">▶</button>
+      <button class="pb" id="cl-next">⏭</button>
+      <button class="pb" id="cl-auto">🔁</button>
+    </div>
+    <div class="acts">
+      <input class="inp wn" id="cl-nm" placeholder="곡 이름">
+      <button class="btn" id="cl-add">곡 추가</button>
+      <button class="btn red" id="cl-delC">현재 곡 삭제</button>
+      <button class="btn blue" id="cl-find">검색</button>
+    </div>
+    <div class="lg" id="cl-lg"></div>
+  </div>
+
+  <div class="info">
+    <h3>⏱ 시간 복잡도</h3>
+    <table class="cx">
+      <thead><tr><th>연산</th><th>시간</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>삽입 (tail 뒤)</td><td class="g">O(1)</td><td>tail → new → head 연결</td></tr>
+        <tr><td>맨 앞 삭제</td><td class="g">O(1)</td><td>tail.next 변경</td></tr>
+        <tr><td>임의 노드 삭제</td><td class="r">O(n)</td><td>이전 노드 순회 필요</td></tr>
+        <tr><td>다음 이동</td><td class="g">O(1)</td><td>next 포인터</td></tr>
+        <tr><td>순환 감지</td><td class="y">항상 순환</td><td>tail.next === head</td></tr>
+        <tr><td>검색</td><td class="r">O(n)</td><td>한 바퀴 순회</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== Compare Panel ===== -->
+<div class="pnl" id="p-cmp">
+  <div class="info">
+    <h3>⚖️ 4가지 리스트 비교 — 한눈에 정리</h3>
+    <table class="cx">
+      <thead>
+        <tr>
+          <th>연산</th>
+          <th>📋 Array List</th>
+          <th>➡️ Singly</th>
+          <th>↔️ Doubly</th>
+          <th>🔁 Circular</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>인덱스 접근</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>맨 앞 삽입</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>맨 뒤 삽입</td>
+          <td class="g">O(1)*</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>맨 앞 삭제</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>맨 뒤 삭제</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>중간 삽입/삭제</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)†</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>이전 곡</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+          <td class="g">O(1)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>다음 곡</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+          <td class="g">O(1)</td>
+        </tr>
+        <tr>
+          <td>검색</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+          <td class="r">O(n)</td>
+        </tr>
+        <tr>
+          <td>메모리</td>
+          <td class="g">가장 적음</td>
+          <td class="y">+next 포인터</td>
+          <td class="r">+prev/next</td>
+          <td class="y">+next 포인터</td>
+        </tr>
+        <tr>
+          <td>순환 재생</td>
+          <td class="r">별도 로직</td>
+          <td class="r">별도 로직</td>
+          <td class="r">별도 로직</td>
+          <td class="g">자연스러움</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="note">* amortized, resize 시 O(n) &nbsp; † 노드 참조가 있을 때</p>
+  </div>
+
+  <div class="info">
+    <h3>🎯 결론 — 어떤 리스트를 써야 할까?</h3>
+    <table class="cx">
+      <thead><tr><th>상황</th><th>추천</th><th>이유</th></tr></thead>
+      <tbody>
+        <tr><td>번호로 곡 선택</td><td class="g">📋 ArrayList</td><td>인덱스 O(1) 접근</td></tr>
+        <tr><td>앞에서 자주 추가/삭제</td><td class="g">➡️ Singly</td><td>head 조작 O(1), 메모리 절약</td></tr>
+        <tr><td>이전곡/다음곡 자유 이동</td><td class="g">↔️ Doubly</td><td>양방향 O(1)</td></tr>
+        <tr><td>전체 반복 재생</td><td class="g">🔁 Circular</td><td>자연스러운 순환</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="info">
+    <h3>💡 실제 앱은?</h3>
+    <p>실제 음악 앱(Spotify, Apple Music 등)은 <span class="y">ArrayList + Doubly Linked List</span>를 혼합합니다.
+      인덱스 접근이 필요한 UI 목록은 <span class="g">ArrayList</span>,
+      이전/다음 이동이 잦은 재생 큐는 <span class="g">Doubly Linked List</span>,
+      반복 재생 모드에서는 <span class="g">Circular</span> 구조를 적용합니다.
+      <strong>자료구조는 은총알이 아니라 도구 — 상황에 맞게 골라 쓰는 것이 핵심입니다.</strong></p>
+  </div>
+</div>
+
+<!-- Scripts (dependency order) -->
+<script src="js/models/Song.js"></script>
+<script src="js/models/ArrayList.js"></script>
+<script src="js/models/SinglyLinkedList.js"></script>
+<script src="js/models/DoublyLinkedList.js"></script>
+<script src="js/models/CircularLinkedList.js"></script>
+<script src="js/renderers/NodeRenderer.js"></script>
+<script src="js/utils/Logger.js"></script>
+<script src="js/ui/TabController.js"></script>
+<script src="js/ui/PlayerController.js"></script>
+<script src="js/ui/ALController.js"></script>
+<script src="js/ui/SLController.js"></script>
+<script src="js/ui/DLController.js"></script>
+<script src="js/ui/CLController.js"></script>
+<script src="js/ui/CompareView.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

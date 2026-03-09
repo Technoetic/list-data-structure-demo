@@ -1,0 +1,62 @@
+/* ============================================
+   variables.css - Design Tokens & CSS Variables
+   Music Playlist Linked List Demo
+   ============================================ */
+
+:root {
+  /* Background layers */
+  --bg: #0b0b16;
+  --sf: #13132a;
+  --card: #1a1a36;
+  --bd: #282850;
+
+  /* Text */
+  --tx: #e4e4f0;
+  --dim: #6b6b8a;
+
+  /* Primary */
+  --pri: #5b8cff;
+  --pri2: #3a6aef;
+
+  /* Accents */
+  --grn: #3dddb6;
+  --red: #ff5e7e;
+  --yel: #ffd96a;
+  --ora: #ff9f43;
+  --pur: #b07aff;
+
+  /* Radius */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  /* Shadows */
+  --shadow: 0 4px 20px rgba(0, 0, 0, .4);
+
+  /* Animation durations */
+  --anim-fast: 150ms;
+  --anim-normal: 300ms;
+  --anim-slow: 500ms;
+
+  /* Typography */
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', monospace;
+
+  /* Spacing scale */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+
+  /* Z-index layers */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-overlay: 100;
+  --z-modal: 1000;
+
+  /* Gradient presets */
+  --grad-pri: linear-gradient(135deg, var(--pri), var(--pur));
+  --grad-grn: linear-gradient(135deg, var(--grn), #2ab89a);
+  --grad-red: linear-gradient(135deg, var(--red), #e0445f);
+}

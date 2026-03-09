@@ -1,0 +1,90 @@
+/* ============================================
+   log.css - Operation Log Panel
+   ============================================ */
+
+.lg {
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  padding: var(--sp-md);
+  margin: 0 var(--sp-md) var(--sp-md);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.8;
+  min-height: 50px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd) transparent;
+  color: var(--dim);
+}
+
+.lg:empty::before {
+  content: '연산 로그가 여기에 표시됩니다';
+  color: var(--dim);
+  font-style: italic;
+  font-size: 0.72rem;
+}
+
+.lg-w {
+  color: var(--yel);
+}
+
+.lg-e {
+  color: var(--red);
+}
+
+.lg::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lg::-webkit-scrollbar-thumb {
+  background: var(--bd);
+  border-radius: 2px;
+}
+
+/* Operation name - green */
+.lg .op {
+  color: var(--grn);
+  font-weight: 600;
+}
+
+/* Value - blue */
+.lg .v {
+  color: var(--pri);
+}
+
+/* Index - yellow */
+.lg .i {
+  color: var(--yel);
+}
+
+/* Comment / structure - purple */
+.lg .c {
+  color: var(--pur);
+}
+
+/* Timestamp */
+.lg .ts {
+  color: var(--dim);
+  margin-right: var(--sp-sm);
+  font-size: 0.65rem;
+}
+
+/* Log entry */
+.lg__entry {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(40, 40, 80, 0.3);
+}
+
+.lg__entry:last-child {
+  border-bottom: none;
+}
+
+/* Empty log */
+.lg__empty {
+  color: var(--dim);
+  text-align: center;
+  font-style: italic;
+  padding: var(--sp-md) 0;
+}

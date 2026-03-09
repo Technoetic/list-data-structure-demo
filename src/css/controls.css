@@ -1,0 +1,186 @@
+/* ============================================
+   controls.css - Actions, Inputs, Buttons, Tracks
+   ============================================ */
+
+/* Action Row */
+.acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: var(--sp-md);
+  margin: 0 var(--sp-md) var(--sp-md);
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-md);
+  align-items: center;
+}
+
+/* Input Fields */
+.inp {
+  padding: 8px 12px;
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r-sm);
+  color: var(--tx);
+  font-size: 0.82rem;
+  transition: border-color var(--anim-fast);
+}
+
+.inp:focus {
+  border-color: var(--pri);
+}
+
+.inp::placeholder {
+  color: var(--dim);
+}
+
+.inp.wn {
+  width: 140px;
+}
+
+.inp.wi {
+  width: 80px;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--grn);
+  color: #0b0b16;
+  cursor: pointer;
+  transition: all var(--anim-fast);
+  white-space: nowrap;
+  border: none;
+}
+
+.btn:hover {
+  background: #34c9a5;
+  box-shadow: 0 2px 12px rgba(61, 221, 182, 0.3);
+}
+
+.btn.red {
+  background: var(--red);
+  color: #fff;
+}
+
+.btn.red:hover {
+  background: #e84e6c;
+  box-shadow: 0 2px 12px rgba(255, 94, 126, 0.3);
+}
+
+.btn.blue {
+  background: var(--pri);
+  color: #fff;
+}
+
+.btn.blue:hover {
+  background: var(--pri2);
+  box-shadow: 0 2px 12px rgba(91, 140, 255, 0.3);
+}
+
+.btn.purple {
+  background: var(--pur);
+  color: #fff;
+}
+
+.btn.purple:hover {
+  box-shadow: 0 2px 12px rgba(176, 122, 255, 0.3);
+}
+
+.bt {
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all var(--anim-fast);
+  white-space: nowrap;
+}
+
+.bt-g {
+  background: var(--grn);
+  color: #0b0b16;
+}
+
+.bt-g:hover {
+  background: #34c9a5;
+  box-shadow: 0 2px 12px rgba(61, 221, 182, 0.3);
+}
+
+.bt-r {
+  background: var(--red);
+  color: #fff;
+}
+
+.bt-r:hover {
+  background: #e84e6c;
+  box-shadow: 0 2px 12px rgba(255, 94, 126, 0.3);
+}
+
+.bt-o {
+  background: transparent;
+  border: 1px solid var(--bd);
+  color: var(--dim);
+}
+
+.bt-o:hover {
+  border-color: var(--pri);
+  color: var(--tx);
+}
+
+/* Track List */
+.tks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--sp-lg);
+  padding: 0 var(--sp-md);
+}
+
+.track {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 8px 12px;
+  background: var(--sf);
+  border-radius: var(--r-sm);
+  font-size: 0.82rem;
+  color: var(--dim);
+  cursor: pointer;
+  transition: background var(--anim-fast);
+}
+
+.track:hover {
+  background: var(--card);
+}
+
+.track.on {
+  background: rgba(61, 221, 182, 0.08);
+  color: var(--grn);
+  font-weight: 600;
+}
+
+.tn {
+  width: 22px;
+  text-align: center;
+  font-size: 0.7rem;
+  font-family: var(--mono);
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.tt {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Highlight search result */
+.hl {
+  border-color: var(--yel) !important;
+  box-shadow: 0 0 14px rgba(255, 217, 106, 0.35);
+}
